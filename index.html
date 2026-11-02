@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#070d17" />
+    <meta
+      name="description"
+      content="พื้นที่ส่วนตัวสำหรับทุกคอร์สของคุณ ค้นหา จัดเก็บ และเรียนต่อได้ในที่เดียว"
+    />
+    <title>CourseVault — คลังคอร์สส่วนตัว</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;450;500;600&family=Manrope:wght@400;450;500;550;600;650;700;750;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#library">ข้ามไปยังคลังคอร์ส</a>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#overview" aria-label="CourseVault ภาพรวม"
+          ><span class="brand-mark" data-icon="vault"></span
+          ><span
+            >course<span class="brand-light">vault</span
+            ><span class="brand-dot">.</span></span
+          ></a
+        >
+        <nav class="main-nav" aria-label="เมนูหลัก">
+          <button class="nav-link active" data-nav="overview">ภาพรวม</button>
+          <button class="nav-link" data-nav="courses">คอร์สทั้งหมด</button>
+          <button class="nav-link" data-nav="favorites">รายการโปรด</button>
+          <button class="nav-link" data-nav="notes">โน้ตของฉัน</button>
+        </nav>
+        <div class="header-actions">
+          <span class="private-badge"><i></i> PERSONAL SPACE</span
+          ><button
+            class="profile-button"
+            id="profile-button"
+            aria-label="ตั้งค่าพื้นที่ส่วนตัว"
+          >
+            ME
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" id="hero" aria-labelledby="hero-title">
+          <div class="hero-image" aria-hidden="true"></div>
+          <div class="hero-grain" aria-hidden="true"></div>
+          <div class="hero-copy">
+            <div class="eyebrow">
+              <span class="tiny-cross">+</span> YOUR PERSONAL LEARNING SPACE
+            </div>
+            <h1 id="hero-title">Learnnig.<br /><span>Cybersecurity.</span></h1>
+            <p>
+              ทุกความรู้ที่ลงทุนไป อยู่ใกล้คุณกว่าที่เคย<br />รวมคอร์สที่ซื้อไว้
+              จัดให้เป็นระเบียบ แล้วไปต่อในแบบของคุณ
+            </p>
+            <div class="hero-actions">
+              <button class="button button-primary" id="hero-resume">
+                <span data-icon="play"></span> เรียนต่อกันเลย
+                <span data-icon="arrow-right"></span></button
+              ><button class="button button-ghost" id="hero-library">
+                ดูคลังคอร์ส <span data-icon="arrow-down"></span>
+              </button>
+            </div>
+            <div class="hero-footnote">
+              <span data-icon="shield"></span> YOUR KNOWLEDGE. YOUR OWN SPACE.
+            </div>
+          </div>
+          <div class="floating-card" id="continue-card"></div>
+          <div class="hero-caption">
+            <span class="crosshair">+</span
+            ><span>A LITTLE PROGRESS, EVERY DAY.</span
+            ><span class="hero-coordinate">01 / ∞</span>
+          </div>
+        </section>
+
+        <section class="stats" id="stats" aria-label="ภาพรวมการเรียน"></section>
+
+        <section
+          class="library-section"
+          id="library"
+          aria-labelledby="library-title"
+        >
+          <div class="section-head">
+            <div>
+              <div class="eyebrow section-eyebrow" id="section-eyebrow">
+                CURATED BY YOU
+              </div>
+              <h2 id="library-title">
+                คลังคอร์สของฉัน<span class="title-dot">.</span>
+              </h2>
+              <p class="section-description" id="section-description">
+                ความรู้ดี ๆ ที่เลือกไว้ ให้พร้อมเรียนเมื่อคุณพร้อม
+              </p>
+            </div>
+            <button class="button button-add" id="add-course">
+              <span data-icon="plus"></span> เพิ่มคอร์สใหม่
+            </button>
+          </div>
+          <div class="library-tools" id="library-tools">
+            <label class="search-box"
+              ><span data-icon="search"></span
+              ><input
+                type="search"
+                id="search"
+                placeholder="ค้นหาคอร์ส หรือผู้สอน..."
+                aria-label="ค้นหาคอร์ส"
+              /><kbd>Ctrl K</kbd></label
+            >
+            <div class="tool-actions">
+              <label class="sort-control"
+                ><span data-icon="sort"></span
+                ><select id="sort" aria-label="เรียงลำดับคอร์ส">
+                  <option value="recent">เพิ่มล่าสุด</option>
+                  <option value="progress">ความคืบหน้ามากที่สุด</option>
+                  <option value="name">ชื่อคอร์ส A–Z</option></select
+                ><span data-icon="chevron-down"></span
+              ></label>
+              <div class="view-toggle" aria-label="รูปแบบการแสดงผล">
+                <button
+                  class="active"
+                  data-layout="grid"
+                  aria-label="แสดงแบบการ์ด"
+                  aria-pressed="true"
+                >
+                  <span data-icon="grid"></span></button
+                ><button
+                  data-layout="list"
+                  aria-label="แสดงแบบรายการ"
+                  aria-pressed="false"
+                >
+                  <span data-icon="list"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="category-row"
+            id="category-row"
+            aria-label="หมวดหมู่คอร์ส"
+          ></div>
+          <div class="status-row" id="status-row"></div>
+          <div class="course-grid" id="course-grid" aria-live="polite"></div>
+          <div class="library-bottom">
+            <span id="results-count"></span
+            ><span
+              ><span class="small-spark">✳</span> One course closer to who you
+              want to be.</span
+            >
+          </div>
+        </section>
+        <section
+          class="notes-section"
+          id="notes-section"
+          aria-labelledby="notes-title"
+          hidden
+        >
+          <div class="section-head">
+            <div>
+              <div class="eyebrow section-eyebrow">THOUGHTS WORTH KEEPING</div>
+              <h2 id="notes-title">
+                โน้ตของฉัน<span class="title-dot">.</span>
+              </h2>
+              <p class="section-description">
+                สิ่งที่ได้เรียนรู้ เก็บไว้กลับมาทบทวน
+              </p>
+            </div>
+          </div>
+          <div class="notes-grid" id="notes-grid"></div>
+        </section>
+      </main>
+      <footer class="footer">
+        <a class="brand footer-brand" href="#overview"
+          ><span class="brand-mark" data-icon="vault"></span
+          ><span
+            >course<span class="brand-light">vault</span
+            ><span class="brand-dot">.</span></span
+          ></a
+        ><span>A space for your next chapter.</span
+        ><span class="footer-right"
+          ><span class="status-dot"></span> MADE FOR YOUR GROWTH</span
+        >
+      </footer>
+    </div>
+    <dialog
+      id="course-dialog"
+      class="course-dialog"
+      aria-labelledby="detail-title"
+    >
+      <div id="course-detail"></div>
+    </dialog>
+    <dialog id="form-dialog" class="form-dialog" aria-labelledby="form-title">
+      <form id="course-form">
+        <div class="dialog-heading">
+          <div>
+            <div class="eyebrow">MAKE ROOM FOR KNOWLEDGE</div>
+            <h2 id="form-title">เพิ่มคอร์สใหม่</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="form-dialog"
+            aria-label="ปิดหน้าต่าง"
+          >
+            <span data-icon="x"></span>
+          </button>
+        </div>
+        <input type="hidden" id="edit-id" />
+        <div class="cover-editor">
+          <label class="form-label" for="course-cover-file">รูปปกคอร์ส</label>
+          <div class="cover-preview" id="cover-preview"></div>
+          <input
+            class="form-input cover-file"
+            type="file"
+            id="course-cover-file"
+            accept="image/jpeg,image/png,image/webp"
+            aria-describedby="cover-help cover-error"
+          />
+          <p class="field-help" id="cover-help">
+            เลือกภาพ JPG, PNG หรือ WebP ไม่เกิน 10 MB ระบบจะย่อรูปให้ก่อนบันทึก
+          </p>
+          <button type="button" class="text-button" id="remove-cover" hidden>
+            นำรูปออกและใช้ปกเริ่มต้น
+          </button>
+          <p class="form-error" id="cover-error" role="status"></p>
+        </div>
+        <label class="form-label" for="course-name"
+          >ชื่อคอร์ส <span>*</span></label
+        ><input
+          class="form-input"
+          id="course-name"
+          maxlength="120"
+          required
+          placeholder="เช่น Complete Web Design Masterclass"
+        />
+        <div class="form-columns">
+          <div>
+            <label class="form-label" for="course-provider"
+              >ผู้สอน / แพลตฟอร์ม</label
+            ><input
+              class="form-input"
+              id="course-provider"
+              maxlength="80"
+              placeholder="เช่น Udemy, SkillLane, ชื่อผู้สอน"
+            />
+          </div>
+          <div>
+            <label class="form-label" for="course-category">หมวดหมู่</label
+            ><select class="form-input" id="course-category">
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="development">Development</option>
+              <option value="ai">AI & Technology</option>
+              <option value="business">Business</option>
+              <option value="creative">Creative</option>
+              <option value="other">อื่น ๆ</option>
+            </select>
+          </div>
+        </div>
+        <label class="form-label" for="course-url">ลิงก์เข้าเรียน</label
+        ><input
+          class="form-input"
+          type="url"
+          id="course-url"
+          placeholder="https://..."
+          aria-describedby="url-help"
+        />
+        <p class="field-help" id="url-help">
+          ลิงก์แพลตฟอร์มคอร์ส โฟลเดอร์ Drive หรือวิดีโอของคุณ
+        </p>
+        <div class="form-columns">
+          <div>
+            <label class="form-label" for="course-lessons">จำนวนบทเรียน</label
+            ><input
+              class="form-input"
+              type="number"
+              id="course-lessons"
+              min="1"
+              max="300"
+              value="1"
+              required
+            />
+          </div>
+          <div>
+            <label class="form-label" for="course-hours"
+              >ระยะเวลา (ชั่วโมง)</label
+            ><input
+              class="form-input"
+              type="number"
+              id="course-hours"
+              min="0"
+              max="9999"
+              step="0.5"
+              value="0"
+            />
+          </div>
+        </div>
+        <label class="form-label" for="course-description">รายละเอียด</label
+        ><textarea
+          class="form-input"
+          id="course-description"
+          rows="3"
+          maxlength="1000"
+          placeholder="คอร์สนี้อยากเรียนอะไรเป็นพิเศษ..."
+        ></textarea>
+        <p class="form-error" id="form-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button
+            type="button"
+            class="button button-ghost"
+            data-close="form-dialog"
+          >
+            ยกเลิก</button
+          ><button
+            class="button button-primary"
+            type="submit"
+            id="course-submit"
+          >
+            <span data-icon="plus"></span
+            ><span id="form-submit-label">เพิ่มลงในคลัง</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="lesson-dialog"
+      class="form-dialog small-dialog"
+      aria-labelledby="lesson-dialog-title"
+    >
+      <form id="lesson-form">
+        <input type="hidden" id="edit-lesson-id" />
+        <div class="dialog-heading">
+          <h2 id="lesson-dialog-title">เพิ่มบทเรียน</h2>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="lesson-dialog"
+            aria-label="ปิดหน้าต่าง"
+          >
+            <span data-icon="x"></span>
+          </button>
+        </div>
+        <label class="form-label" for="lesson-name">ชื่อบทเรียน</label
+        ><input
+          class="form-input"
+          id="lesson-name"
+          maxlength="160"
+          required
+        /><label class="form-label" for="lesson-url">ลิงก์คลิปสอน (ถ้ามี)</label
+        ><input
+          class="form-input"
+          type="url"
+          id="lesson-url"
+          placeholder="https://..."
+        />
+        <label class="form-label" for="lesson-slides-url">ลิงก์สไลด์เรียน (ถ้ามี)</label>
+        <input
+          class="form-input"
+          type="url"
+          id="lesson-slides-url"
+          placeholder="https://..."
+          aria-describedby="lesson-links-help"
+        />
+        <p class="field-help" id="lesson-links-help">ใส่ลิงก์คลิปสอนและสไลด์แยกกันได้ หรือใส่เฉพาะลิงก์ที่มี</p>
+        <p class="form-error" id="lesson-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="button button-primary" type="submit">
+            บันทึกบทเรียน <span data-icon="arrow-right"></span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="settings-dialog"
+      class="form-dialog small-dialog"
+      aria-labelledby="settings-title"
+    >
+      <div class="dialog-heading">
+        <h2 id="settings-title">พื้นที่ของคุณ</h2>
+        <button
+          class="icon-button"
+          data-close="settings-dialog"
+          aria-label="ปิดหน้าต่าง"
+        >
+          <span data-icon="x"></span>
+        </button>
+      </div>
+      <p class="settings-copy">
+        คอร์ส ความคืบหน้า และโน้ตจะบันทึกในเบราว์เซอร์นี้
+        หากเปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์ ให้นำไฟล์สำรองกลับมาใช้
+      </p>
+      <div class="settings-buttons">
+        <button id="export-data" class="button button-primary">
+          <span data-icon="download"></span> สำรองข้อมูลเป็นไฟล์</button
+        ><label class="button button-outline" for="import-data"
+          ><span data-icon="upload"></span> นำเข้าข้อมูลสำรอง</label
+        ><input
+          type="file"
+          id="import-data"
+          accept="application/json,.json"
+          hidden
+        />
+      </div>
+      <p class="field-help">
+        การนำเข้าจะรวมคอร์สเข้ากับรายการเดิม และอัปเดตคอร์สที่มีรหัสตรงกัน
+      </p>
+      <div id="restore-courses-slot"></div>
+    </dialog>
+    <div class="toast" id="toast" role="status">
+      <span data-icon="check"></span><span id="toast-message"></span>
+    </div>
+  </body>
+</html>
