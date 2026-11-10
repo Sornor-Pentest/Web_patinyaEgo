@@ -3,30 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#070d17" />
+    <meta name="theme-color" content="#061442" />
     <meta
       name="description"
       content="พื้นที่ส่วนตัวสำหรับทุกคอร์สของคุณ ค้นหา จัดเก็บ และเรียนต่อได้ในที่เดียว"
     />
-    <title>CourseVault — คลังคอร์สส่วนตัว</title>
+    <title>sornorEgo — คลังคอร์สส่วนตัว</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;450;500;600&family=Manrope:wght@400;450;500;550;600;650;700;750;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;450;500;600&family=Manrope:wght@400;450;500;550;600;650;700;750;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="liquid.css" />
+    <script src="assets/world-110m.js" defer></script>
+    <script src="threatmap.js" defer></script>
     <script src="app.js" defer></script>
+    <script src="liquid.js" defer></script>
   </head>
   <body>
+    <div class="liquid-bg" aria-hidden="true">
+      <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="blob b4"></i>
+    </div>
     <a class="skip-link" href="#library">ข้ามไปยังคลังคอร์ส</a>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="#overview" aria-label="CourseVault ภาพรวม"
+        <a class="brand" href="#overview" aria-label="sornorEgo ภาพรวม"
           ><span class="brand-mark" data-icon="vault"></span
           ><span
-            >course<span class="brand-light">vault</span
+            >sornor<span class="brand-light">Ego</span
             ><span class="brand-dot">.</span></span
           ></a
         >
@@ -49,18 +56,27 @@
       </header>
 
       <main>
-        <section class="hero" id="hero" aria-labelledby="hero-title">
-          <div class="hero-image" aria-hidden="true"></div>
-          <div class="hero-grain" aria-hidden="true"></div>
-          <div class="hero-copy">
-            <div class="eyebrow">
-              <span class="tiny-cross">+</span> YOUR PERSONAL LEARNING SPACE
-            </div>
-            <h1 id="hero-title">Learnnig.<br /><span>Cybersecurity.</span></h1>
-            <p>
-              ทุกความรู้ที่ลงทุนไป อยู่ใกล้คุณกว่าที่เคย<br />รวมคอร์สที่ซื้อไว้
+        <section class="hero-wrap" id="hero" aria-labelledby="hero-title">
+          <div class="liquid-orb orb-a" aria-hidden="true"></div>
+          <div class="liquid-orb orb-b" aria-hidden="true"></div>
+          <div class="hero-top">
+            <span class="hero-vertical" aria-hidden="true">PERSONAL LEARNING SPACE</span>
+            <h1 id="hero-title">Learning<span>Cybersecurity</span></h1>
+            <p class="hero-sub">
+              ทุกความรู้ที่ลงทุนไป อยู่ใกล้คุณกว่าที่เคย รวมคอร์สที่ซื้อไว้
               จัดให้เป็นระเบียบ แล้วไปต่อในแบบของคุณ
             </p>
+            <form class="hero-search" id="hero-search" role="search">
+              <input
+                type="search"
+                id="hero-search-input"
+                placeholder="ค้นหาคอร์ส หรือผู้สอน..."
+                aria-label="ค้นหาคอร์ส"
+              />
+              <button type="submit" aria-label="ค้นหา">
+                <span data-icon="search"></span>
+              </button>
+            </form>
             <div class="hero-actions">
               <button class="button button-primary" id="hero-resume">
                 <span data-icon="play"></span> เรียนต่อกันเลย
@@ -69,16 +85,68 @@
                 ดูคลังคอร์ส <span data-icon="arrow-down"></span>
               </button>
             </div>
-            <div class="hero-footnote">
-              <span data-icon="shield"></span> YOUR KNOWLEDGE. YOUR OWN SPACE.
+          </div>
+          <div class="hero hero-map" role="region" aria-label="แผนที่จำลองการโจมตีไซเบอร์">
+          <div class="threat-stage" id="threat-stage">
+            <canvas
+              id="threat-canvas"
+              tabindex="0"
+              role="img"
+              aria-label="แผนที่จำลองการโจมตีไซเบอร์ทั่วโลก คลิกประเทศเพื่อดูรายละเอียด"
+            ></canvas>
+            <div class="threat-tip" id="threat-tip" hidden></div>
+          </div>
+          <div class="threat-controls" role="group" aria-label="ควบคุมแผนที่">
+            <button type="button" id="tm-zoom-in" aria-label="ซูมเข้า">+</button>
+            <button type="button" id="tm-zoom-out" aria-label="ซูมออก">−</button>
+            <button type="button" id="tm-reset" aria-label="รีเซ็ตมุมมอง">⟲</button>
+          </div>
+          <div class="threat-hint">
+            คลิกประเทศเพื่อดูรายละเอียด · ลากเพื่อเลื่อน · Ctrl + ล้อเมาส์เพื่อซูม
+          </div>
+          <div class="hero-bar">
+            <div class="hero-bar-title">
+              <div class="eyebrow">
+                <span class="live-dot"></span> LIVE CYBER THREAT MAP
+                <span class="sim-badge">SIMULATED</span>
+              </div>
             </div>
+            <a
+              class="button button-ghost"
+              href="https://threatseye.io/threats-map"
+              target="_blank"
+              rel="noopener noreferrer"
+              >ดูข้อมูลจริงที่ ThreatsEye</a
+            >
           </div>
-          <div class="floating-card" id="continue-card"></div>
-          <div class="hero-caption">
-            <span class="crosshair">+</span
-            ><span>A LITTLE PROGRESS, EVERY DAY.</span
-            ><span class="hero-coordinate">01 / ∞</span>
+          <aside class="threat-feed" aria-label="ฟีดเหตุการณ์จำลอง">
+            <div class="threat-feed-head">
+              <span>CYBER THREAT FEEDS</span>
+              <div class="threat-counter">
+                <small>ATTACKS (DEMO)</small>
+                <strong id="threat-count">0</strong>
+              </div>
+            </div>
+            <p class="threat-filter" id="threat-filter" hidden></p>
+            <ul id="threat-feed-list"></ul>
+            <p class="threat-note">
+              ข้อมูลทั้งหมดสุ่มสร้างในหน้านี้เพื่อความสวยงาม ไม่ใช่เหตุการณ์จริง
+            </p>
+          </aside>
+          <div class="threat-info" id="threat-info" hidden>
+            <div class="ti-head">
+              <strong id="ti-name"></strong>
+              <button type="button" id="ti-clear" aria-label="ยกเลิกการเลือกประเทศ">
+                ✕
+              </button>
+            </div>
+            <div class="ti-grid">
+              <div><small>ถูกโจมตี (จำลอง)</small><b id="ti-in">0</b></div>
+              <div><small>โจมตีออก (จำลอง)</small><b id="ti-out">0</b></div>
+            </div>
+            <p id="ti-top"></p>
           </div>
+        </div>
         </section>
 
         <section class="stats" id="stats" aria-label="ภาพรวมการเรียน"></section>
@@ -180,7 +248,7 @@
         <a class="brand footer-brand" href="#overview"
           ><span class="brand-mark" data-icon="vault"></span
           ><span
-            >course<span class="brand-light">vault</span
+            >sornor<span class="brand-light">Ego</span
             ><span class="brand-dot">.</span></span
           ></a
         ><span>A space for your next chapter.</span

@@ -317,12 +317,6 @@ function renderStats() {
     )
     .join("");
   const course = continueCourse();
-  $("#continue-card").hidden = !course;
-  if (course) {
-    const next = course.lessons.find((l) => !l.done);
-    $("#continue-card").innerHTML =
-      `<div class="continue-eyebrow"><i></i> ${progress(course) === 100 ? "กลับมาทบทวนกัน" : "เรียนต่อจากครั้งล่าสุด"}</div><h2 class="continue-course">${escapeHTML(course.title)}</h2><p class="continue-lesson">${next ? escapeHTML(next.title) : "ทุกบทเรียนเสร็จสมบูรณ์แล้ว"}</p><div class="continue-progress-head"><span>YOUR PROGRESS</span><strong>${progress(course)}%</strong></div><div class="progress-track"><span style="width:${progress(course)}%"></span></div><div class="continue-bottom"><span>${course.lessons.filter((l) => l.done).length} / ${course.lessons.length} LESSONS</span><button data-open="${escapeHTML(course.id)}">${progress(course) === 100 ? "ทบทวนคอร์ส" : "ไปต่อกัน"} ${icon("arrow-right")}</button></div>`;
-  }
   $("#hero-resume").innerHTML =
     icon("play") +
     ` ${course ? "เรียนต่อกันเลย" : "เพิ่มคอร์สแรก"} ` +
