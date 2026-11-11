@@ -805,3 +805,521 @@ body {
     letter-spacing: -1px;
   }
 }
+
+/* ==========================================================
+   Page-long decoration: spheres, flowing shapes, light bars
+   (anchored to the page so they scroll with the content)
+   ========================================================== */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+.page-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.sphere,
+.liquid-orb {
+  background:
+    radial-gradient(
+      ellipse 45% 35% at 32% 24%,
+      #a4f1ffcc 0%,
+      #5fe0ff55 45%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse at 34% 26%,
+      #3fd2ff 0%,
+      #1b86ff 40%,
+      #0b3fc4 76%,
+      #071f78 100%
+    );
+}
+.sphere {
+  position: absolute;
+  display: block;
+  border-radius: 54% 46% 52% 48% / 50% 56% 44% 50%;
+  box-shadow:
+    inset 0 16px 44px #9af0ff55,
+    inset 0 -26px 60px #02104fa6,
+    0 34px 90px #0a2fb355;
+  will-change: transform;
+}
+.sphere.s1 {
+  width: clamp(120px, 15vw, 240px);
+  height: clamp(115px, 14vw, 225px);
+  left: -3%;
+  top: 36%;
+  opacity: 0.9;
+  animation: drift-b 20s ease-in-out infinite alternate;
+}
+.sphere.s2 {
+  width: clamp(70px, 8vw, 130px);
+  height: clamp(68px, 8vw, 125px);
+  right: 2%;
+  top: 41%;
+  border-radius: 48% 52% 44% 56% / 54% 46% 54% 46%;
+  opacity: 0.85;
+  animation: drift-c 17s ease-in-out infinite alternate;
+}
+.sphere.s3 {
+  width: clamp(170px, 22vw, 360px);
+  height: clamp(160px, 20vw, 330px);
+  right: -7%;
+  top: 56%;
+  border-radius: 60% 40% 56% 44% / 46% 58% 42% 54%;
+  opacity: 0.75;
+  animation: drift-a 25s ease-in-out infinite alternate;
+}
+.sphere.s4 {
+  width: clamp(90px, 11vw, 180px);
+  height: clamp(88px, 10.5vw, 172px);
+  left: 3%;
+  top: 68%;
+  border-radius: 46% 54% 50% 50% / 56% 44% 56% 44%;
+  opacity: 0.9;
+  animation: drift-c 19s ease-in-out infinite alternate;
+}
+.sphere.s5 {
+  width: clamp(60px, 7vw, 115px);
+  height: clamp(58px, 6.8vw, 110px);
+  right: 16%;
+  top: 79%;
+  opacity: 0.85;
+  animation: drift-b 15s ease-in-out infinite alternate-reverse;
+}
+.sphere.s6 {
+  width: clamp(150px, 19vw, 300px);
+  height: clamp(140px, 18vw, 280px);
+  left: -6%;
+  top: 86%;
+  border-radius: 52% 48% 58% 42% / 48% 54% 46% 52%;
+  opacity: 0.8;
+  animation: drift-a 23s ease-in-out infinite alternate;
+}
+.sphere.s7 {
+  width: clamp(55px, 6vw, 100px);
+  height: clamp(54px, 5.8vw, 96px);
+  right: 7%;
+  top: 93%;
+  opacity: 0.9;
+  animation: drift-c 16s ease-in-out infinite alternate;
+}
+
+/* big translucent flowing shapes behind sections */
+.flow {
+  position: absolute;
+  display: block;
+  background: radial-gradient(
+    ellipse at 40% 30%,
+    #2f9bff 0%,
+    #1450d8 45%,
+    #0a2584 100%
+  );
+  filter: blur(2px);
+  opacity: 0.26;
+  box-shadow: inset 0 20px 80px #7fe8ff44;
+}
+.flow.f1 {
+  width: 78%;
+  height: 520px;
+  left: -14%;
+  top: 33%;
+  border-radius: 60% 40% 55% 45% / 55% 50% 50% 45%;
+  transform: rotate(-6deg);
+}
+.flow.f2 {
+  width: 66%;
+  height: 460px;
+  right: -16%;
+  top: 57%;
+  border-radius: 45% 55% 40% 60% / 50% 45% 55% 50%;
+  transform: rotate(7deg);
+  opacity: 0.22;
+}
+.flow.f3 {
+  width: 70%;
+  height: 380px;
+  left: 6%;
+  top: 82%;
+  border-radius: 55% 45% 60% 40% / 48% 56% 44% 52%;
+  transform: rotate(-3deg);
+  opacity: 0.2;
+}
+
+/* thin vertical light bars like the reference */
+.bar {
+  position: absolute;
+  display: block;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, transparent, #5cd0ff66, transparent);
+  opacity: 0.55;
+}
+.bar.br1 {
+  left: 24%;
+  top: 24%;
+  height: 220px;
+}
+.bar.br2 {
+  left: 62%;
+  top: 31%;
+  height: 300px;
+}
+.bar.br3 {
+  left: 88%;
+  top: 50%;
+  height: 260px;
+}
+.bar.br4 {
+  left: 8%;
+  top: 62%;
+  height: 340px;
+}
+.bar.br5 {
+  left: 47%;
+  top: 76%;
+  height: 240px;
+}
+
+/* sphere tucked behind the map card's corner */
+.orb-c {
+  width: clamp(110px, 13vw, 210px);
+  height: clamp(105px, 12.5vw, 200px);
+  left: -3%;
+  bottom: -46px;
+  border-radius: 50% 50% 46% 54% / 54% 46% 54% 46%;
+  opacity: 0.95;
+  animation: drift-c 18s ease-in-out infinite alternate;
+  z-index: 0;
+}
+.hero.hero-map {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 760px) {
+  .flow {
+    opacity: 0.18;
+  }
+  .bar {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sphere,
+  .orb-c {
+    animation: none;
+  }
+}
+
+/* ==========================================================
+   Palette v2: white / deep navy / black
+   Hero stays navy; the page fades to black underneath.
+   White is the only accent colour (no more bright cyan).
+   ========================================================== */
+:root {
+  --bg: #02050f;
+  --panel: #0a1740;
+  --panel-hover: #0e215c;
+  --line: #ffffff2e;
+  --muted: #c3d1ee;
+  --blue: #ffffff;
+  --accent: #ffffff;
+  --glass: linear-gradient(155deg, #0c1d57cc, #050b24f2);
+  --glass-line: #ffffff33;
+}
+html {
+  background: #000;
+}
+body {
+  background:
+    radial-gradient(ellipse 80% 520px at 50% 0, #1d4fe0 0%, transparent 100%),
+    linear-gradient(180deg, #0a2275 0, #081a5c 480px, #050d2e 1050px, #02050f 1700px, #000 100%);
+  background-attachment: scroll;
+}
+
+/* blobs only live in the top part of the page and fade out */
+.liquid-bg {
+  position: absolute;
+  height: 1100px;
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 45%, transparent 100%);
+}
+.blob {
+  box-shadow:
+    inset 0 18px 60px #7fb4ff44,
+    inset 0 -30px 80px #02104f99;
+}
+/* remove the lower-page decorations that crowded the cards */
+.page-orbs .sphere.s1,
+.page-orbs .sphere.s2,
+.page-orbs .sphere.s3,
+.page-orbs .sphere.s4,
+.page-orbs .sphere.s5,
+.page-orbs .sphere.s6,
+.page-orbs .sphere.s7,
+.page-orbs .flow,
+.page-orbs .bar,
+.orb-c {
+  display: none;
+}
+
+/* thin white rule + big quiet sphere only as a footer accent */
+.footer {
+  position: relative;
+}
+
+/* ---------- buttons: white is the accent ---------- */
+.button-primary,
+.button-add {
+  background: #fff;
+  color: #06164f;
+  border-color: #fff;
+  box-shadow: 0 10px 30px #0a2fb355;
+}
+.button-primary:hover,
+.button-add:hover {
+  background: #e4ecff;
+}
+.button-primary svg,
+.button-add svg {
+  color: #06164f;
+}
+.button-ghost,
+.button-outline {
+  background: #0000004d;
+  border-color: #ffffffcc;
+}
+.button-ghost:hover,
+.button-outline:hover {
+  background: #ffffff22;
+}
+.detail-primary.button-primary {
+  background: #fff;
+  color: #06164f;
+}
+
+/* ---------- hero / map card ---------- */
+.hero-top h1 {
+  text-shadow: 0 8px 50px #0a2fb388;
+}
+.hero.hero-map {
+  background: linear-gradient(165deg, #0b2377 0%, #061649 55%, #030a26 100%);
+  border-color: #ffffff40;
+  box-shadow: 0 30px 80px #000000aa;
+}
+.hero-map .hero-bar,
+.hero-map .threat-feed,
+.hero-map .threat-info,
+.hero-map .threat-controls {
+  background: #02081dcc;
+  border-color: #ffffff2e;
+}
+.live-dot {
+  background: #fff;
+  box-shadow: 0 0 8px #fff;
+}
+.sim-badge {
+  border-color: #ffffff88;
+  color: #fff;
+}
+.threat-counter strong,
+.ti-grid b {
+  color: #fff;
+}
+.threat-filter {
+  background: #ffffff1c;
+  color: #fff;
+}
+.threat-note,
+.threat-hint,
+.threat-item span,
+.ti-grid small,
+.threat-counter small {
+  color: #aebfe0;
+}
+
+/* ---------- stats ---------- */
+.stats {
+  background: linear-gradient(155deg, #0a1a52cc, #02071ccc);
+  border-color: #ffffff33;
+}
+.stat-label,
+.stat-value small {
+  color: #c3d1ee;
+}
+
+/* ---------- library ---------- */
+.library-section {
+  padding-top: 64px;
+}
+.section-eyebrow {
+  color: #c3d1ee;
+}
+.title-dot {
+  color: #fff;
+}
+.section-description,
+.demo-notice {
+  color: #c3d1ee;
+}
+.search-box,
+.sort-control,
+.view-toggle {
+  background: #ffffff0f;
+  border-color: #ffffff66;
+}
+.view-toggle button.active {
+  background: #fff;
+  color: #06164f;
+}
+.category-chip {
+  background: transparent;
+  border-color: #ffffff55;
+  color: #fff;
+}
+.category-chip.active {
+  background: #fff;
+  border-color: #fff;
+  color: #06164f;
+}
+.status-tab {
+  color: #c3d1ee;
+}
+.status-tab span {
+  background: #ffffff1f;
+  color: #fff;
+}
+.status-tab.active {
+  color: #fff;
+}
+.status-tab.active:after {
+  background: #fff;
+  box-shadow: none;
+}
+.status-tab.active span {
+  background: #fff;
+  color: #06164f;
+}
+
+/* ---------- course cards: solid navy-to-black, white text ---------- */
+.course-card {
+  background: linear-gradient(165deg, #0c1f5e 0%, #07123a 55%, #030819 100%);
+  border: 1px solid #ffffff2b;
+  border-radius: 24px;
+  backdrop-filter: none;
+  box-shadow: 0 18px 44px #000000aa;
+}
+.course-card:hover {
+  border-color: #ffffffcc;
+  box-shadow: 0 24px 54px #000000cc;
+}
+.card-title {
+  color: #fff;
+}
+.card-provider,
+.card-meta,
+.card-meta span,
+.card-progress-head,
+.card-progress-head span {
+  color: #c3d1ee;
+}
+.card-progress-head strong {
+  color: #fff;
+}
+.card-bottom,
+.card-bottom span {
+  color: #c3d1ee;
+}
+.card-go {
+  color: #fff;
+  font-weight: 600;
+}
+.progress-track {
+  background: #ffffff26;
+  height: 4px;
+}
+.progress-track span {
+  background: #fff;
+}
+.course-cover {
+  border-bottom: 1px solid #ffffff1f;
+}
+
+/* ---------- list view: compact rows, no giant empty gap ---------- */
+.course-grid.list-layout {
+  gap: 14px;
+  max-width: 980px;
+}
+.list-layout .course-card {
+  grid-template-columns: 200px 1fr;
+}
+.list-layout .course-cover {
+  min-height: 132px;
+  border-bottom: 0;
+  border-right: 1px solid #ffffff1f;
+}
+.list-layout .card-body {
+  grid-template-columns: 1fr minmax(180px, 240px);
+  column-gap: 36px;
+  align-items: center;
+  padding: 16px 26px;
+}
+
+/* ---------- notes, dialogs, form ---------- */
+.note-card {
+  background: linear-gradient(165deg, #0c1f5e, #030819);
+}
+dialog {
+  background: linear-gradient(165deg, #0a1d5a 0%, #060f33 60%, #02061a 100%);
+  border-color: #ffffff3d;
+}
+dialog::backdrop {
+  background: #000000d9;
+}
+.lesson-check:checked {
+  background: #fff;
+  border-color: #fff;
+  color: #06164f;
+}
+.toast {
+  background: #fff;
+  color: #06164f;
+  border-color: #fff;
+}
+.profile-button,
+.brand-mark {
+  border-color: #fff;
+}
+.nav-link.active:after {
+  background: #fff;
+  box-shadow: 0 0 10px #fff;
+}
+.footer {
+  border-top-color: #ffffff2e;
+}
+
+/* keep the completed state inside the palette (white, not green) */
+.course-card .progress-track span,
+.card-progress-head + .progress-track span {
+  background: #fff !important;
+}
+.card-progress-head strong,
+.card-progress-head span {
+  color: #fff;
+}
+
+.course-grid.list-layout {
+  max-width: none;
+}
+.list-layout .card-body {
+  grid-template-columns: 1fr minmax(240px, 380px);
+}
+.card-progress-head strong,
+.card-progress-head b,
+.card-pct {
+  color: #fff !important;
+}
