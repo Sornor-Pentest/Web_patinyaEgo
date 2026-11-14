@@ -1,30 +1,30 @@
 /*
   Cyber Desk — เครื่องมือส่วนตัวสำหรับงาน Pentest (เพิ่มเข้าเว็ป sornorEgo)
-  ใช้งาน: วางไฟล์นี้ข้าง index.html แล้วเพิ่มในหน้า 2 จุด
-    1) <script src="desk.js" defer></script>  (ใน <head>)
-    2) <button class="button button-ghost" id="desk-open" type="button">Cyber Desk</button>  (ใน .header-actions)
+  ใช้งาน: วางไฟล์นี้ข้าง index.html แล้วเพิ่มใน <head> บรรทัดเดียว
+      <script src="desk.js" defer></script>
+  ปุ่ม "Cyber Desk" จะถูกเพิ่มเข้าแถวเมนูหลัก (.main-nav) ให้อัตโนมัติ
   ทำงานใน Shadow DOM จึงไม่ชนกับ CSS/JS เดิม ข้อมูลเก็บใน localStorage คีย์ "sornorEgo-desk-v1"
 */
 (() => {
 "use strict";
 
-// ---------- ฟอนต์ monospace (ถ้ายังไม่มี) ----------
-if (!document.querySelector('link[data-desk-font]')) {
+// ---------- fonts ----------
+if (!document.querySelector("link[data-desk-font]")) {
   const l = document.createElement("link");
   l.rel = "stylesheet"; l.dataset.deskFont = "1";
-  l.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap";
+  l.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@500;600;700;800&display=swap";
   document.head.appendChild(l);
 }
 
-// ---------- กรอบ dialog (นอก shadow) ----------
+// ---------- dialog frame (outside shadow) ----------
 const gs = document.createElement("style");
 gs.textContent = `
-#desk-dialog{width:min(1180px,96vw);height:min(90vh,860px);max-width:none;max-height:none;padding:0;margin:auto;
-  border:1px solid rgba(255,255,255,.16);border-radius:14px;overflow:hidden;color:#eef2ff;
-  background:linear-gradient(160deg,#0b1d5c,#061442)}
-#desk-dialog::backdrop{background:rgba(3,8,28,.72);backdrop-filter:blur(4px)}
+#desk-dialog{width:min(1240px,97vw);height:min(92vh,900px);max-width:none;max-height:none;padding:0;margin:auto;
+  border:1px solid rgba(255,255,255,.14);border-radius:26px;overflow:hidden;color:#f1f4ff;background:#061442;
+  box-shadow:0 30px 80px rgba(0,0,0,.55)}
+#desk-dialog::backdrop{background:rgba(3,8,28,.74);backdrop-filter:blur(4px)}
 #desk-host{display:block;height:100%}
-@media (max-width:760px){#desk-dialog{width:100vw;height:100dvh;border:0;border-radius:0}}`;
+@media (max-width:820px){#desk-dialog{width:100vw;height:100dvh;border:0;border-radius:0}}`;
 document.head.appendChild(gs);
 
 const dlg = document.createElement("dialog");
@@ -33,182 +33,230 @@ const host = document.createElement("div");
 host.id = "desk-host";
 dlg.appendChild(host);
 document.body.appendChild(dlg);
-// กันคีย์ลัดของหน้าเดิม (เช่น Ctrl K) มารบกวนตอนพิมพ์ในหน้านี้
 ["keydown", "keyup", "keypress"].forEach(t => host.addEventListener(t, e => e.stopPropagation()));
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
-const CSS = `:host{display:block;height:100%;color:var(--text);font:15px/1.6 "IBM Plex Sans Thai",system-ui,sans-serif;
-  --bg:rgba(2,8,32,.45);--surface:rgba(255,255,255,.055);--line:rgba(255,255,255,.14);--text:#eef2ff;--muted:#9db0e6;
-  --accent:#6f9bff;--accent-ink:#061442;--code:rgba(0,0,0,.3);--ok:#4cc38a;--warn:#e6b84e;color-scheme:dark}
-
+const CSS = `
 *{box-sizing:border-box}
-.mono,code,pre,textarea.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+:host{display:block;height:100%;color:var(--text);font:14.5px/1.6 "IBM Plex Sans Thai",Manrope,system-ui,sans-serif;
+  --navy:#061442;--panel:#0a1f5c;--panel-2:#0f2872;--line:rgba(255,255,255,.1);--text:#f1f4ff;--muted:#a3b3e6;
+  --blue:#3f5df0;--blue-2:#5a76ff;--yellow:#ffe84d;--ink:#061442;--code:rgba(0,0,0,.3);--ok:#4cd6a0;color-scheme:dark}
+[hidden]{display:none!important}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.mono,code,pre,textarea.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
 
-.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
-aside{border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:22px;
-  position:sticky;top:0;height:100vh}
-.brand{font-weight:600;font-size:18px;letter-spacing:.01em}
-.brand small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
-nav{display:flex;flex-direction:column;gap:4px}
-nav button{display:flex;justify-content:space-between;align-items:center;background:none;border:0;
-  padding:9px 12px;border-radius:6px;text-align:left;color:var(--muted)}
-nav button:hover{background:var(--surface)}
-nav button[aria-selected="true"]{background:var(--surface);color:var(--text);font-weight:500;
-  box-shadow:inset 3px 0 0 var(--accent)}
-nav .n{font-size:12px;color:var(--muted)}
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;height:100%;padding:16px;
+  background:radial-gradient(900px 420px at 90% -8%,rgba(63,93,240,.4),transparent 62%),var(--navy)}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px 14px;
+  display:flex;flex-direction:column;gap:22px;overflow:auto;min-height:0}
+.brand{display:flex;gap:12px;align-items:center;padding:0 6px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--blue);display:grid;place-items:center;flex:none}
+.logo svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brand b{display:block;font:800 18px/1.1 Manrope,sans-serif}
+.brand small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+nav{display:flex;flex-direction:column;gap:3px}
+nav button{display:flex;align-items:center;gap:11px;background:none;border:0;padding:7px 10px;border-radius:13px;
+  color:var(--muted);text-align:left;font:600 14px Manrope,"IBM Plex Sans Thai",sans-serif}
+nav button .ic{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.07);display:grid;place-items:center;flex:none}
+nav button .ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button .lbl{flex:1}
+nav button:hover{background:rgba(255,255,255,.06);color:var(--text)}
+nav button[aria-selected="true"]{background:var(--blue);color:#fff}
+nav button[aria-selected="true"] .ic{background:rgba(255,255,255,.2)}
+nav .n{font:600 12px Manrope,sans-serif;background:rgba(255,255,255,.12);border-radius:99px;padding:0 8px;min-width:24px;text-align:center}
+nav .n:empty{display:none}
 .side-tools{margin-top:auto;display:flex;flex-direction:column;gap:6px}
-.ghost{background:none;border:1px solid var(--line);border-radius:6px;padding:7px 10px;color:var(--muted);text-align:left}
-.ghost:hover{color:var(--text);border-color:var(--muted)}
+.hint{margin:6px 6px 0;font-size:12px;color:var(--muted)}
 
-main{padding:26px clamp(16px,4vw,44px);max-width:980px;width:100%}
-.bar{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
-.bar input[type=search]{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--line);
-  background:var(--surface);border-radius:6px}
-.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:10px 18px;font-weight:500}
-.primary:hover{filter:brightness(1.08)}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 18px}
-.chip{border:1px solid var(--line);background:none;border-radius:99px;padding:2px 11px;font-size:13px;color:var(--muted)}
-.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+main{overflow:auto;min-width:0;min-height:0;padding:0 6px 24px 0}
+main::-webkit-scrollbar{width:10px}
+main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:99px}
+.hero{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.hero-main{position:relative;overflow:hidden;border-radius:20px;padding:26px 28px;
+  background:linear-gradient(135deg,#3f5df0,#2541c8)}
+.hero-main:before{content:"";position:absolute;right:-70px;top:-80px;width:250px;height:250px;border-radius:50%;
+  border:36px solid rgba(255,255,255,.09)}
+.hero-main:after{content:"";position:absolute;right:80px;bottom:-100px;width:190px;height:190px;border-radius:50%;
+  background:rgba(255,255,255,.07)}
+.hero-main>*{position:relative;z-index:1}
+.hero-tag{display:inline-block;margin-bottom:14px;padding:2px 12px;border-radius:99px;background:rgba(255,255,255,.17);
+  font:600 12px Manrope,sans-serif}
+.hero h1{margin:0;font:800 34px/1.1 Manrope,sans-serif;letter-spacing:-.01em}
+.hero p{margin:10px 0 0;max-width:48ch;color:#dfe6ff}
+.hero-stat{background:var(--yellow);color:var(--ink);border-radius:20px;padding:22px 24px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.hero-stat span{font-weight:600}
+.hero-stat b{font:800 46px/1 Manrope,sans-serif}
+.hero-stat small{opacity:.72;font-weight:500}
+.prog{height:8px;border-radius:99px;background:rgba(6,20,66,.18);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);border-radius:99px}
 
-.list{display:flex;flex-direction:column;gap:10px}
-.item{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
-.item h3{margin:0;font-size:15px;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.bar input[type=search]{flex:1;min-width:180px;padding:11px 18px;border:1px solid var(--line);background:var(--panel);border-radius:99px;color:var(--text)}
+.primary{background:var(--blue);color:#fff;border:0;border-radius:99px;padding:11px 22px;font-weight:600}
+.primary:hover{background:var(--blue-2)}
+.ghost{background:none;border:1px solid rgba(255,255,255,.24);border-radius:99px;padding:9px 18px;color:var(--text)}
+.ghost:hover{background:rgba(255,255,255,.08)}
+.side-tools .ghost{text-align:left;border-radius:13px;color:var(--muted);padding:8px 14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 16px}
+.chip{border:1px solid var(--line);background:none;border-radius:99px;padding:2px 13px;font-size:13px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--yellow);border-color:var(--yellow);color:var(--ink);font-weight:600}
+
+.list{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.item h3{margin:0;font:700 15.5px/1.4 Manrope,"IBM Plex Sans Thai",sans-serif;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .item h3 a{color:inherit;text-decoration:none}
-.item h3 a:hover{color:var(--accent);text-decoration:underline}
-.item pre{margin:10px 0 0;padding:12px 14px;background:var(--code);border-radius:6px;overflow-x:auto;
-  font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.item h3 a:hover{color:var(--yellow);text-decoration:underline}
+.item pre{margin:10px 0 0;padding:12px 14px;background:var(--code);border-radius:12px;overflow-x:auto;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
-.tag{background:var(--code);border-radius:4px;padding:1px 8px}
+.tag{background:rgba(255,255,255,.09);border-radius:99px;padding:0 10px}
 .acts{margin-left:auto;display:flex;gap:4px}
-.acts button{background:none;border:0;color:var(--muted);padding:2px 8px;border-radius:4px;font-size:13px}
-.acts button:hover{background:var(--code);color:var(--text)}
+.acts button{background:none;border:0;color:var(--muted);padding:2px 10px;border-radius:99px;font-size:13px}
+.acts button:hover{background:rgba(255,255,255,.1);color:var(--text)}
 .url{font-size:12.5px;color:var(--muted);word-break:break-all}
+.sev{font:700 12px Manrope,sans-serif;padding:2px 11px;border-radius:99px;color:#fff;flex:none}
+.s-Critical{background:#d23b4b}.s-High{background:#e5772b}.s-Medium{background:#b88a13}.s-Low{background:#3f5df0}.s-Info{background:#5f6d94}
 
 .task{display:flex;gap:12px;align-items:center}
-.state{flex:none;width:86px;border:1px solid var(--line);background:none;border-radius:6px;padding:3px 0;font-size:12.5px}
-.state[data-s="doing"]{border-color:var(--warn);color:var(--warn)}
+.state{flex:none;width:86px;border:1px solid var(--line);background:none;border-radius:99px;padding:3px 0;font-size:12.5px}
+.state[data-s="doing"]{border-color:var(--yellow);color:var(--yellow)}
 .state[data-s="done"]{border-color:var(--ok);color:var(--ok)}
 .task .t{flex:1}
 .task.done .t b{text-decoration:line-through;color:var(--muted);font-weight:400}
 .due{font-size:12.5px;color:var(--muted)}
-.due.late{color:#d64545;font-weight:500}
+.due.late{color:#ff8f8f;font-weight:600}
 
-[hidden]{display:none!important}
-label select{padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text)}
-.sev{font-size:12px;font-weight:500;padding:1px 10px;border-radius:99px;color:#fff;flex:none}
-.s-Critical{background:#c0392b}.s-High{background:#d9722b}.s-Medium{background:#a9791c}.s-Low{background:#3a6fd8}.s-Info{background:#6b7686}
-.chk{flex-direction:row;align-items:flex-start;gap:10px;color:var(--text);font-size:14px;padding:4px 0;cursor:pointer}
-.chk input{padding:0;border:0;width:auto;margin-top:6px}
+.empty{border:1px dashed rgba(255,255,255,.22);border-radius:18px;padding:34px 20px;text-align:center;color:var(--muted)}
+.chk{display:flex;flex-direction:row;align-items:flex-start;gap:10px;color:var(--text);font-size:14px;padding:4px 0;cursor:pointer}
+.chk input{width:auto;margin-top:6px;accent-color:var(--yellow)}
 .chk input:checked+span{color:var(--muted);text-decoration:line-through}
-.grp{margin:0 0 6px;font-size:14px;font-weight:600}
-.tool textarea,.tool input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;margin-top:10px}
+.grp{margin:0 0 6px}
+.tool textarea,.tool input{width:100%;margin-top:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);color:var(--text);font-size:13px}
 .tool textarea{min-height:90px;resize:vertical}
 .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.bar .ghost{padding:10px 14px}
+.btns .ghost{padding:6px 14px;font-size:13px}
 .cv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+.cvres{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-top:12px;padding:14px 18px;border-radius:16px;background:var(--yellow);color:var(--ink)}
+.cvres b{font:800 36px/1 Manrope,sans-serif}
+.cvres span{font-weight:700}
+.cvres code{flex-basis:100%;font-size:12.5px;word-break:break-all}
 .ref .scroll{overflow-x:auto;margin-top:8px}
 .ref table{width:100%;border-collapse:collapse;font-size:13.5px}
 .ref td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
-.ref td:first-child{font-family:"JetBrains Mono",ui-monospace,monospace;white-space:nowrap;width:1%}
+.ref td:first-child{font-family:"JetBrains Mono",ui-monospace,monospace;white-space:nowrap;width:1%;color:var(--yellow)}
 .ref td:last-child{color:var(--muted)}
+
 .md{margin-top:10px;font-size:14px;line-height:1.65;word-break:break-word}
 .md h4,.md h5,.md h6{margin:14px 0 4px;font-size:14.5px}
 .md p{margin:6px 0}.md ul,.md ol{margin:6px 0;padding-left:22px}
-.md code{font-family:"JetBrains Mono",ui-monospace,monospace;background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px}
-.md pre{margin:8px 0;padding:12px 14px;background:var(--code);border-radius:6px;overflow-x:auto;font-size:13px;white-space:pre-wrap}
+.md code{background:var(--code);padding:1px 6px;border-radius:6px;font-size:12.5px}
+.md pre{margin:8px 0;padding:12px 14px;background:var(--code);border-radius:12px;overflow-x:auto;font-size:13px;white-space:pre-wrap}
 .md pre code{background:none;padding:0}
-.md blockquote{margin:6px 0;padding:2px 12px;border-left:3px solid var(--line);color:var(--muted)}
-.md a{color:var(--accent)}.md hr{border:0;border-top:1px solid var(--line)}
+.md blockquote{margin:6px 0;padding:2px 12px;border-left:3px solid var(--blue-2);color:var(--muted)}
+.md a{color:var(--yellow)}.md hr{border:0;border-top:1px solid var(--line)}
 #form .md{border-top:1px solid var(--line);padding-top:6px;max-height:260px;overflow:auto}
-.rbox{padding:22px;display:flex;flex-direction:column;gap:14px}
-.rbox h2{margin:0;font-size:17px}
-.rbox textarea{min-height:340px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical}
-#rdlg{width:min(760px,94vw)}
-.empty{border:1px dashed var(--line);border-radius:8px;padding:34px 20px;text-align:center;color:var(--muted)}
 
-dialog{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;
-  padding:0;width:min(620px,94vw)}
-dialog::backdrop{background:rgba(10,14,20,.55)}
-dialog form{padding:22px;display:flex;flex-direction:column;gap:14px}
-dialog h2{margin:0;font-size:17px}
+dialog{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:22px;padding:0;width:min(640px,94vw)}
+dialog::backdrop{background:rgba(3,8,28,.72)}
+dialog form{padding:24px;display:flex;flex-direction:column;gap:14px}
+dialog h2,.rbox h2{margin:0;font:800 19px Manrope,sans-serif}
 label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
-label input,label textarea{padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text)}
+label input,label textarea,label select{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);color:var(--text)}
 label textarea{min-height:150px;resize:vertical;font-size:13px}
+select{color-scheme:dark;cursor:pointer}
+select option,select optgroup{background:#0a1f5c;color:#f1f4ff;font-size:14px;padding:6px 10px}
+select option:checked,select option:hover{background:#3f5df0;color:#fff}
 .row{display:flex;gap:8px;justify-content:flex-end}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);
-  padding:8px 16px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.rbox{padding:24px;display:flex;flex-direction:column;gap:14px}
+.rbox textarea{min-height:340px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.25);color:var(--text);font-size:13px;resize:vertical}
+#rdlg{width:min(780px,94vw)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--yellow);color:var(--ink);font-weight:600;
+  padding:8px 18px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 
-@media (max-width:760px){
-  .app{grid-template-columns:1fr}
-  aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px 16px;
-    border-right:0;border-bottom:1px solid var(--line);gap:12px}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);padding:10px;gap:10px}
+  aside{flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px;gap:10px;overflow:visible}
   nav{flex-direction:row;order:3;width:100%;overflow-x:auto}
-  nav button{white-space:nowrap;gap:8px}
+  nav button{white-space:nowrap}
   .side-tools{margin:0 0 0 auto;flex-direction:row}
+  .hint{display:none}
+  .hero{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-
-.app{height:100%;min-height:0}
-aside{position:static;height:100%;overflow:auto}
-main{max-width:none;height:100%;overflow:auto}
-dialog{background:#0c1f66}
-.toast{color:#061442}
-@media (max-width:760px){.app{grid-template-rows:auto minmax(0,1fr)}aside{height:auto;overflow:visible}}
 `;
+
 const HTML = `
 <div class="app">
   <aside>
-    <div class="brand">Cyber Desk<small>เครื่องมือส่วนตัว ข้อมูลเก็บในเบราว์เซอร์นี้</small></div>
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <span><b>Cyber Desk</b><small>Personal pentest toolkit</small></span>
+    </div>
     <nav id="nav" role="tablist"></nav>
     <div class="side-tools">
       <button class="ghost" id="export">ส่งออกข้อมูล (JSON)</button>
       <button class="ghost" id="import">นำเข้าข้อมูล</button>
       <input type="file" id="file" accept="application/json" hidden>
       <button class="ghost" id="close">ปิด</button>
+      <p class="hint">ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น</p>
     </div>
   </aside>
   <main>
+    <section class="hero" id="hero"></section>
     <div class="bar">
       <input type="search" id="q" placeholder="ค้นหา..." aria-label="ค้นหา">
-      <button class="ghost" id="report">สร้างรายงาน (MD)</button><button class="primary" id="add"></button>
+      <button class="ghost" id="report">Generate report (MD)</button><button class="primary" id="add"></button>
     </div>
     <div class="chips" id="chips"></div>
     <div class="list" id="list"></div>
   </main>
 </div>
 <dialog id="dlg"><form method="dialog" id="form"></form></dialog>
-<dialog id="rdlg"><div class="rbox"><h2>ร่างรายงาน (Markdown)</h2>
+<dialog id="rdlg"><div class="rbox"><h2>Report draft (Markdown)</h2>
   <textarea id="rtext" class="mono" readonly spellcheck="false"></textarea>
-  <div class="row"><button class="ghost" id="rclose">ปิด</button><button class="ghost" id="rcopy">คัดลอก</button><button class="primary" id="rdl">ดาวน์โหลด .md</button></div></div></dialog>
+  <div class="row"><button class="ghost" id="rclose">ปิด</button><button class="ghost" id="rcopy">คัดลอก</button><button class="primary" id="rdl">Download .md</button></div></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 `;
+
 const root = host.attachShadow({ mode: "open" });
 root.innerHTML = `<style>${CSS}</style>` + HTML;
 
-
+// ================= data =================
 const KEY = "sornorEgo-desk-v1";
-const SEV = ["Critical","High","Medium","Low","Info"];
+const SEV = ["Critical", "High", "Medium", "Low", "Info"];
+const TAGS = ["tags", "Tags (คั่นด้วยเครื่องหมายจุลภาค)", "input"];
 const SCHEMA = {
-  findings: { label: "ข้อพบ", add: "เพิ่มข้อพบ", empty: "ยังไม่มีข้อพบ บันทึกช่องโหว่ที่เจอระหว่างทดสอบไว้ที่นี่",
-    fields: [["title","ชื่อข้อพบ","input"],["client","งาน / ลูกค้า","input"],["target","เป้าหมาย (URL / endpoint / host)","input"],
-      ["severity","ระดับความรุนแรง","select",SEV],["cvss","CVSS (คะแนน และ vector)","input"],["status","สถานะ","select",["Open","Reported","Fixed","Accepted risk"]],
-      ["body","รายละเอียด / ขั้นตอน reproduce / ข้อเสนอแนะ","textarea"],["tags","แท็ก (คั่นด้วยเครื่องหมายจุลภาค)","input"]] },
-  checklist: { label: "เช็กลิสต์", view: "check" },
-  tools: { label: "เครื่องมือ", view: "tools" },
-  cmds: { label: "คำสั่ง", view: "cmds", search: true },
-  refs: { label: "ตารางอ้างอิง", view: "refs", search: true },
-  notes: { label: "โน้ต MD", add: "เพิ่มโน้ต", empty: "ยังไม่มีโน้ต เขียนด้วย Markdown แล้วดูพรีวิวได้ทันที",
-    fields: [["title","หัวข้อ","input"],["body","เนื้อหา (Markdown)","textarea"],["tags","แท็ก (คั่นด้วยเครื่องหมายจุลภาค)","input"]] },
-  snippets: { label: "สนิปเป็ต", add: "เพิ่มสนิปเป็ต", empty: "ยังไม่มีสนิปเป็ต เก็บคำสั่งหรือโน้ตที่ใช้บ่อยไว้ที่นี่",
-    fields: [["title","หัวข้อ","input"],["body","คำสั่ง / เนื้อหา","textarea"],["tags","แท็ก (คั่นด้วยเครื่องหมายจุลภาค)","input"]] },
-  tasks: { label: "งาน", add: "เพิ่มงาน", empty: "ยังไม่มีงาน เพิ่มสิ่งที่ต้องทำเป็นรายการแรก",
-    fields: [["title","งาน","input"],["due","กำหนดส่ง","date"],["tags","แท็ก (คั่นด้วยเครื่องหมายจุลภาค)","input"]] },
-  links: { label: "ลิงก์", add: "เพิ่มลิงก์", empty: "ยังไม่มีลิงก์ บันทึกเว็บหรือเครื่องมือที่ใช้บ่อยไว้ที่นี่",
-    fields: [["title","ชื่อ","input"],["url","URL","url"],["tags","แท็ก (คั่นด้วยเครื่องหมายจุลภาค)","input"]] }
+  findings: { label: "Findings", add: "เพิ่ม Finding", empty: "ยังไม่มี Finding บันทึกช่องโหว่ที่เจอระหว่างทดสอบไว้ที่นี่",
+    fields: [["title", "Finding title", "input"], ["client", "Client / Project", "input"], ["target", "Target (URL / endpoint / host)", "input"],
+      ["severity", "Severity", "select", SEV], ["cvss", "CVSS (score and vector)", "input"],
+      ["status", "Status", "select", ["Open", "Reported", "Fixed", "Accepted risk"]],
+      ["body", "Description / Steps to reproduce / Remediation", "textarea"], TAGS] },
+  checklist: { label: "Checklist", view: "check" },
+  tools: { label: "Toolbox", view: "tools" },
+  cmds: { label: "Commands", view: "cmds", search: true },
+  refs: { label: "Reference", view: "refs", search: true },
+  notes: { label: "Notes", add: "เพิ่มโน้ต", empty: "ยังไม่มีโน้ต เขียนด้วย Markdown แล้วดูพรีวิวได้ทันที",
+    fields: [["title", "Title", "input"], ["body", "Content (Markdown)", "textarea"], TAGS] },
+  snippets: { label: "Snippets", add: "เพิ่ม Snippet", empty: "ยังไม่มี Snippet เก็บคำสั่งหรือเนื้อหาที่ใช้บ่อยไว้ที่นี่",
+    fields: [["title", "Title", "input"], ["body", "Command / Content", "textarea"], TAGS] },
+  tasks: { label: "Tasks", add: "เพิ่ม Task", empty: "ยังไม่มี Task เพิ่มสิ่งที่ต้องทำเป็นรายการแรก",
+    fields: [["title", "Task", "input"], ["due", "Due date", "date"], TAGS] },
+  links: { label: "Links", add: "เพิ่ม Link", empty: "ยังไม่มี Link บันทึกเว็บหรือเครื่องมือที่ใช้บ่อยไว้ที่นี่",
+    fields: [["title", "Name", "input"], ["url", "URL", "url"], TAGS] }
+};
+const IC = {
+  findings: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v4M12 16h.01"/>',
+  checklist: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 3h6v4H9z"/><path d="m9 14 2 2 4-4"/>',
+  tools: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  cmds: '<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>',
+  refs: '<path d="M5 4h13a1 1 0 0 1 1 1v15H6a1 1 0 0 1-1-1z"/><path d="M5 19a2 2 0 0 1 2-2h12"/>',
+  notes: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  snippets: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+  tasks: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
+  links: '<path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.7-1.7"/>'
 };
 const $ = s => root.querySelector(s);
 let db = { findings: [], checks: {}, notes: [], snippets: [], tasks: [], links: [] };
@@ -217,21 +265,44 @@ let tab = "findings", tagFilter = "", editing = null;
 try { const raw = localStorage.getItem(KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { toast("บันทึกลงเบราว์เซอร์ไม่ได้"); } }
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.id); toast.id = setTimeout(() => t.classList.remove("on"), 1800); }
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const chipsOf = it => tab === "findings" ? [it.client].filter(Boolean) : tagsOf(it);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const tagsOf = it => (it.tags || "").split(",").map(s => s.trim()).filter(Boolean);
+const chipsOf = it => tab === "findings" ? [it.client].filter(Boolean) : tagsOf(it);
 const safeUrl = u => /^https?:\/\//i.test(u) ? u : "https://" + u;
 
+// ================= chrome =================
 const checkTotal = () => CHECK.reduce((n, g) => n + g[1].length, 0);
 const checkDone = () => Object.values(db.checks).filter(Boolean).length;
+
 function renderNav() {
   const cnt = k => k === "checklist" ? `${checkDone()}/${checkTotal()}` : SCHEMA[k].view ? "" : db[k].length;
   $("#nav").innerHTML = Object.keys(SCHEMA).map(k =>
-    `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${SCHEMA[k].label}<span class="n">${cnt(k)}</span></button>`).join("");
+    `<button role="tab" data-tab="${k}" aria-selected="${k === tab}"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg></span><span class="lbl">${SCHEMA[k].label}</span><span class="n">${cnt(k)}</span></button>`).join("");
+}
+
+function renderHero() {
+  const open = db.findings.filter(f => f.status === "Open").length;
+  const hi = db.findings.filter(f => f.severity === "Critical" || f.severity === "High").length;
+  const pct = Math.round(checkDone() / checkTotal() * 100);
+  const todo = db.tasks.filter(t => t.status !== "done").length;
+  const H = {
+    findings: ["Findings", "บันทึกช่องโหว่ที่เจอ จัดระดับ Severity แล้วสร้างรายงานได้ทันที", "Open findings", open, `${hi} Critical / High`],
+    checklist: ["Checklist", "ขั้นตอนทดสอบเว็ปแอปตามแนว OWASP ติ๊กตามที่ทำเสร็จ", "Completed", `${checkDone()}/${checkTotal()}`, null, pct],
+    tools: ["Toolbox", "Encode / Decode, CVSS, JWT, Hash และ Timestamp ทำงานในเบราว์เซอร์ ไม่ส่งข้อมูลออกไปไหน", "Tools", 5, "Runs locally"],
+    cmds: ["Commands", "คำสั่งของเครื่องมือที่ใช้บ่อย ค้นหาแล้วคัดลอกได้", "Commands", CMDS.length, "nmap, ffuf, sqlmap, curl"],
+    refs: ["Reference", "HTTP status, Common ports และ OWASP Top 10 ไว้เปิดดูระหว่างทดสอบ", "Entries", REFS.reduce((n, r) => n + r[1].length, 0), "Searchable"],
+    notes: ["Notes", "จดโน้ตด้วย Markdown พร้อมพรีวิวสด", "Notes", db.notes.length, null],
+    snippets: ["Snippets", "เก็บคำสั่งหรือเนื้อหาที่ใช้บ่อย กดคัดลอกได้ทันที", "Snippets", db.snippets.length, null],
+    tasks: ["Tasks", "รายการงานพร้อมสถานะและกำหนดส่ง", "Open tasks", todo, null],
+    links: ["Links", "เก็บลิงก์เครื่องมือและบทความที่ใช้บ่อย", "Links", db.links.length, null]
+  }[tab];
+  const [title, desc, label, val, sub, pr] = H;
+  $("#hero").innerHTML = `<div class="hero-main"><span class="hero-tag">Cyber Desk</span><h1>${title}</h1><p>${desc}</p></div>
+    <div class="hero-stat"><span>${label}</span><b>${val}</b>${pr != null ? `<div class="prog"><i style="width:${pr}%"></i></div>` : ""}${sub ? `<small>${esc(sub)}</small>` : ""}</div>`;
 }
 
 function render() {
-  renderNav();
+  renderNav(); renderHero();
   const view = SCHEMA[tab].view;
   $(".bar").hidden = !!view && !SCHEMA[tab].search;
   $("#chips").hidden = !!view;
@@ -284,11 +355,11 @@ function card(it) {
       <div class="url mono">${esc(it.url)}</div><div class="meta">${tagHtml(it)}${acts(it, true)}</div></article>`;
   const today = new Date().toISOString().slice(0, 10);
   const late = it.due && it.status !== "done" && it.due < today;
-  const label = { todo: "ต้องทำ", doing: "กำลังทำ", done: "เสร็จแล้ว" }[it.status];
+  const label = { todo: "To do", doing: "Doing", done: "Done" }[it.status];
   return `<article class="item task ${it.status === "done" ? "done" : ""}">
     <button class="state" data-a="cycle" data-id="${it.id}" data-s="${it.status}" title="เปลี่ยนสถานะ">${label}</button>
     <div class="t"><b>${esc(it.title)}</b>
-      <div class="meta">${it.due ? `<span class="due ${late ? "late" : ""}">กำหนด ${esc(it.due)}${late ? " (เลยกำหนด)" : ""}</span>` : ""}${tagHtml(it)}</div></div>
+      <div class="meta">${it.due ? `<span class="due ${late ? "late" : ""}">Due ${esc(it.due)}${late ? " (overdue)" : ""}</span>` : ""}${tagHtml(it)}</div></div>
     ${acts(it, false)}</article>`;
 }
 
@@ -320,7 +391,7 @@ $("#form").addEventListener("submit", e => {
 
 $("#nav").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]"); if (!b) return;
-  tab = b.dataset.tab; tagFilter = ""; $("#q").value = ""; render();
+  tab = b.dataset.tab; tagFilter = ""; $("#q").value = ""; render(); $("main").scrollTop = 0;
 });
 $("#chips").addEventListener("click", e => {
   const b = e.target.closest("[data-tag]"); if (!b) return;
@@ -341,11 +412,11 @@ $("#list").addEventListener("click", async e => {
 $("#add").onclick = () => openForm();
 $("#q").addEventListener("input", render);
 
-// export / import
+// ---- export / import ----
 $("#export").onclick = () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: "application/json" }));
-  a.download = "patinya-workspace-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.download = "cyber-desk-" + new Date().toISOString().slice(0, 10) + ".json";
   a.click(); URL.revokeObjectURL(a.href);
 };
 $("#import").onclick = () => $("#file").click();
@@ -360,21 +431,21 @@ $("#file").onchange = async e => {
   e.target.value = "";
 };
 
-// ---- checklist ----
+// ================= checklist =================
 const CHECK = [
-  ["Recon", ["Enumerate subdomain และ asset ใน scope","ระบุ tech stack และเวอร์ชัน","ตรวจ robots.txt, sitemap.xml และไฟล์ที่ไม่ควรเปิดเผย","ทบทวน JavaScript หา endpoint และ secret ที่หลุด"]],
-  ["Authentication", ["นโยบายรหัสผ่านและการล็อกบัญชี (lockout / rate limit)","ฟังก์ชันลืมรหัสผ่านและ reset token","MFA bypass","Default credentials","ข้อความ error เผยว่ามี username หรือไม่ (user enumeration)"]],
-  ["Session", ["Cookie flags: HttpOnly, Secure, SameSite","Session ถูก invalidate หลัง logout","Session fixation","การป้องกัน CSRF"]],
-  ["Authorization", ["IDOR / BOLA","Privilege escalation แนวตั้งและแนวนอน","เข้าถึงหน้า admin ตรงผ่าน URL","Forced browsing"]],
-  ["Input validation", ["SQL injection","XSS (reflected, stored, DOM)","Command injection","SSRF","Path traversal / LFI","XXE","File upload (ประเภท ขนาด ที่เก็บไฟล์)"]],
-  ["API", ["Mass assignment","Rate limiting","Response เปิดเผยข้อมูลเกินจำเป็น","ตรวจ JWT (alg, expiry, signature)"]],
-  ["Configuration", ["Security headers (CSP, HSTS, X-Frame-Options)","TLS configuration","CORS policy","Debug mode, stack trace, directory listing","Dependency ที่มีช่องโหว่ที่รู้จัก"]],
-  ["Business logic", ["ข้ามลำดับขั้นตอนได้หรือไม่","Race condition","ค่าที่แก้ฝั่ง client ได้ (ราคา จำนวน)"]],
-  ["รายงาน", ["เก็บ evidence และ screenshot ทุกข้อพบ","จัดระดับความรุนแรงพร้อมเหตุผล","เขียนข้อเสนอแนะการแก้ไข","ลบข้อมูลทดสอบที่สร้างไว้ในระบบเป้าหมาย"]]
+  ["Recon", ["Enumerate subdomains and in-scope assets", "Identify tech stack and versions", "Check robots.txt, sitemap.xml and exposed files", "Review JavaScript for endpoints and leaked secrets"]],
+  ["Authentication", ["Password policy and account lockout / rate limiting", "Forgot-password flow and reset token handling", "MFA bypass", "Default credentials", "User enumeration through error messages"]],
+  ["Session", ["Cookie flags: HttpOnly, Secure, SameSite", "Session invalidation after logout", "Session fixation", "CSRF protection"]],
+  ["Authorization", ["IDOR / BOLA", "Vertical and horizontal privilege escalation", "Direct access to admin pages via URL", "Forced browsing"]],
+  ["Input validation", ["SQL injection", "XSS (reflected, stored, DOM)", "Command injection", "SSRF", "Path traversal / LFI", "XXE", "File upload (type, size, storage location)"]],
+  ["API", ["Mass assignment", "Rate limiting", "Excessive data exposure in responses", "JWT checks (alg, expiry, signature)"]],
+  ["Configuration", ["Security headers (CSP, HSTS, X-Frame-Options)", "TLS configuration", "CORS policy", "Debug mode, stack traces, directory listing", "Known vulnerable dependencies"]],
+  ["Business logic", ["Workflow step skipping", "Race conditions", "Client-side tampering (price, quantity)"]],
+  ["Reporting", ["Capture evidence and screenshots for every finding", "Rate severity with justification", "Write remediation recommendations", "Clean up test data left in the target system"]]
 ];
 function viewCheck() {
-  $("#list").innerHTML = `<div class="meta" style="margin:0 0 4px">ความคืบหน้า ${checkDone()}/${checkTotal()}
-    <span class="acts"><button data-op="chkreset">รีเซ็ตทั้งหมด</button></span></div>` +
+  $("#list").innerHTML = `<div class="meta" style="margin:0 0 4px">Progress ${checkDone()}/${checkTotal()}
+    <span class="acts"><button data-op="chkreset">Reset all</button></span></div>` +
     CHECK.map(([g, items], gi) => `<section class="item"><h3 class="grp">${g}</h3>` +
       items.map((t, i) => { const k = gi + "." + i;
         return `<label class="chk"><input type="checkbox" data-k="${k}" ${db.checks[k] ? "checked" : ""}><span>${t}</span></label>`; }).join("") +
@@ -382,11 +453,11 @@ function viewCheck() {
 }
 $("#list").addEventListener("change", e => {
   const k = e.target.dataset.k; if (!k) return;
-  db.checks[k] = e.target.checked; save(); renderNav();
-  $("#list .meta").firstChild.textContent = `ความคืบหน้า ${checkDone()}/${checkTotal()} `;
+  db.checks[k] = e.target.checked; save(); renderNav(); renderHero();
+  $("#list .meta").firstChild.textContent = `Progress ${checkDone()}/${checkTotal()} `;
 });
 
-// ---- toolbox ----
+// ================= toolbox =================
 const te = new TextEncoder(), td = new TextDecoder();
 const toB64 = s => { let b = ""; te.encode(s).forEach(x => b += String.fromCharCode(x)); return btoa(b); };
 const fromB64 = s => td.decode(Uint8Array.from(atob(s.trim().replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)));
@@ -404,29 +475,29 @@ function tsConv(v) {
   if (/^-?\d+(\.\d+)?$/.test(v)) { let n = Number(v); if (Math.abs(n) < 1e11) n *= 1000; d = new Date(n); }
   else d = new Date(v);
   if (isNaN(d)) throw 0;
-  return `unix (วินาที): ${Math.floor(d / 1000)}\nunix (มิลลิวินาที): ${d.getTime()}\nISO (UTC): ${d.toISOString()}\nเวลาท้องถิ่น: ${d.toLocaleString("th-TH")}`;
+  return `Unix (seconds): ${Math.floor(d / 1000)}\nUnix (milliseconds): ${d.getTime()}\nISO (UTC): ${d.toISOString()}\nLocal time: ${d.toLocaleString("th-TH")}`;
 }
 function viewTools() {
   const b = (op, t) => `<button class="ghost" data-op="${op}">${t}</button>`;
   $("#list").innerHTML = `
-  <section class="item tool"><h3>แปลงรหัส / ถอดรหัส</h3>
-    <textarea id="c-in" class="mono" placeholder="ใส่ข้อความ" spellcheck="false"></textarea>
-    <div class="btns">${b("b64e","Base64 encode")}${b("b64d","Base64 decode")}${b("urle","URL encode")}${b("urld","URL decode")}${b("hexe","Hex encode")}${b("hexd","Hex decode")}${b("hte","HTML encode")}${b("htd","HTML decode")}</div>
-    <textarea id="c-out" class="mono" readonly placeholder="ผลลัพธ์" spellcheck="false"></textarea>
-    <div class="btns">${b("cpout","คัดลอกผลลัพธ์")}${b("swap","ใช้ผลลัพธ์เป็นอินพุต")}</div></section>
-  <section class="item tool"><h3>ตัวคำนวณ CVSS 3.1</h3>
+  <section class="item tool"><h3>Encode / Decode</h3>
+    <textarea id="c-in" class="mono" placeholder="Input text" spellcheck="false"></textarea>
+    <div class="btns">${b("b64e", "Base64 encode")}${b("b64d", "Base64 decode")}${b("urle", "URL encode")}${b("urld", "URL decode")}${b("hexe", "Hex encode")}${b("hexd", "Hex decode")}${b("hte", "HTML encode")}${b("htd", "HTML decode")}</div>
+    <textarea id="c-out" class="mono" readonly placeholder="Output" spellcheck="false"></textarea>
+    <div class="btns">${b("cpout", "Copy output")}${b("swap", "Use output as input")}</div></section>
+  <section class="item tool"><h3>CVSS 3.1 Calculator</h3>
     <div class="cv" id="cvss">${CV.map(([k, n, o]) => `<label>${n}<select id="cv-${k}">${o.map(([c, t]) => `<option value="${c}">${t}</option>`).join("")}</select></label>`).join("")}</div>
-    <pre id="cv-out" class="mono"></pre>
-    <div class="btns">${b("cvcopy","คัดลอก vector")}${b("cvfinding","สร้างข้อพบจากคะแนนนี้")}</div></section>
-  <section class="item tool"><h3>ถอดรหัส JWT (ไม่ตรวจลายเซ็น)</h3>
+    <div id="cv-out" class="cvres"></div>
+    <div class="btns">${b("cvcopy", "Copy vector")}${b("cvfinding", "Create finding from score")}</div></section>
+  <section class="item tool"><h3>JWT Decoder (signature is not verified)</h3>
     <textarea id="j-in" class="mono" placeholder="eyJhbGciOi..." spellcheck="false"></textarea>
-    <div class="btns">${b("jwt","ถอดรหัส")}</div><pre id="j-out" hidden></pre></section>
-  <section class="item tool"><h3>แฮช</h3>
-    <textarea id="h-in" class="mono" placeholder="ข้อความที่ต้องการแฮช" spellcheck="false"></textarea>
-    <div class="btns">${b("SHA-1","SHA-1")}${b("SHA-256","SHA-256")}${b("SHA-512","SHA-512")}</div><pre id="h-out" hidden></pre></section>
+    <div class="btns">${b("jwt", "Decode")}</div><pre id="j-out" hidden></pre></section>
+  <section class="item tool"><h3>Hash</h3>
+    <textarea id="h-in" class="mono" placeholder="Text to hash" spellcheck="false"></textarea>
+    <div class="btns">${b("SHA-1", "SHA-1")}${b("SHA-256", "SHA-256")}${b("SHA-512", "SHA-512")}</div><pre id="h-out" hidden></pre></section>
   <section class="item tool"><h3>Timestamp</h3>
-    <input id="ts-in" class="mono" placeholder="Unix time หรือวันที่ เช่น 1700000000 หรือ 2026-11-13T10:00:00Z" spellcheck="false">
-    <div class="btns">${b("ts","แปลง")}${b("tsnow","ตอนนี้")}</div><pre id="ts-out" hidden></pre></section>`;
+    <input id="ts-in" class="mono" placeholder="Unix time or date, e.g. 1700000000 or 2026-11-13T10:00:00Z" spellcheck="false">
+    <div class="btns">${b("ts", "Convert")}${b("tsnow", "Now")}</div><pre id="ts-out" hidden></pre></section>`;
   cvssCalc();
 }
 function show(id, text) { const el = $(id); el.textContent = text; el.hidden = false; }
@@ -443,8 +514,8 @@ $("#list").addEventListener("click", async e => {
       const h = JSON.parse(fromB64(p[0])), pl = JSON.parse(fromB64(p[1]));
       let out = "// header\n" + JSON.stringify(h, null, 2) + "\n\n// payload\n" + JSON.stringify(pl, null, 2) + "\n";
       for (const k of ["iat", "nbf", "exp"]) if (typeof pl[k] === "number") out += `\n${k}: ${new Date(pl[k] * 1000).toISOString()}`;
-      if (typeof pl.exp === "number" && pl.exp * 1000 < Date.now()) out += "  (หมดอายุแล้ว)";
-      if (/^none$/i.test(h.alg)) out += "\n\nคำเตือน: alg เป็น none";
+      if (typeof pl.exp === "number" && pl.exp * 1000 < Date.now()) out += "  (expired)";
+      if (/^none$/i.test(h.alg)) out += "\n\nWarning: alg is none";
       show("#j-out", out);
     }
     else if (op.startsWith("SHA")) show("#h-out", hex(await crypto.subtle.digest(op, te.encode($("#h-in").value))));
@@ -456,20 +527,20 @@ $("#list").addEventListener("click", async e => {
       openForm(null, { severity: r.sev, cvss: `${r.score.toFixed(1)} ${r.vec}` });
     }
     else if (op === "cpcmd") { await navigator.clipboard.writeText(CMDS[+bt.dataset.i][2]); toast("คัดลอกแล้ว"); }
-    else if (op === "chkreset") { if (confirm("ล้างเครื่องหมายในเช็กลิสต์ทั้งหมด?")) { db.checks = {}; save(); render(); } }
+    else if (op === "chkreset") { if (confirm("ล้างเครื่องหมายใน Checklist ทั้งหมด?")) { db.checks = {}; save(); render(); } }
   } catch (err) { toast("ทำไม่สำเร็จ: ข้อมูลไม่ถูกรูปแบบหรือเบราว์เซอร์ไม่รองรับ"); }
 });
 
 // ---- CVSS 3.1 ----
 const CV = [
-  ["AV","Attack Vector",[["N","Network"],["A","Adjacent"],["L","Local"],["P","Physical"]]],
-  ["AC","Attack Complexity",[["L","Low"],["H","High"]]],
-  ["PR","Privileges Required",[["N","None"],["L","Low"],["H","High"]]],
-  ["UI","User Interaction",[["N","None"],["R","Required"]]],
-  ["S","Scope",[["U","Unchanged"],["C","Changed"]]],
-  ["C","Confidentiality",[["H","High"],["L","Low"],["N","None"]]],
-  ["I","Integrity",[["H","High"],["L","Low"],["N","None"]]],
-  ["A","Availability",[["H","High"],["L","Low"],["N","None"]]]
+  ["AV", "Attack Vector", [["N", "Network"], ["A", "Adjacent"], ["L", "Local"], ["P", "Physical"]]],
+  ["AC", "Attack Complexity", [["L", "Low"], ["H", "High"]]],
+  ["PR", "Privileges Required", [["N", "None"], ["L", "Low"], ["H", "High"]]],
+  ["UI", "User Interaction", [["N", "None"], ["R", "Required"]]],
+  ["S", "Scope", [["U", "Unchanged"], ["C", "Changed"]]],
+  ["C", "Confidentiality", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["I", "Integrity", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["A", "Availability", [["H", "High"], ["L", "Low"], ["N", "None"]]]
 ];
 function cvssCalc() {
   const v = Object.fromEntries(CV.map(([k]) => [k, $("#cv-" + k).value]));
@@ -485,69 +556,69 @@ function cvssCalc() {
   const sev = score === 0 ? "Info" : score < 4 ? "Low" : score < 7 ? "Medium" : score < 9 ? "High" : "Critical";
   const vec = "CVSS:3.1/" + CV.map(([k]) => k + ":" + v[k]).join("/");
   cvssCalc.res = { score, sev, vec };
-  $("#cv-out").textContent = `${score.toFixed(1)}  ${sev}\n${vec}`;
+  $("#cv-out").innerHTML = `<b>${score.toFixed(1)}</b><span>${sev}</span><code>${vec}</code>`;
 }
 $("#list").addEventListener("change", e => { if (e.target.closest("#cvss")) cvssCalc(); });
 
-// ---- command reference ----
+// ================= commands =================
 const CMDS = [
-  ["nmap","สแกนพื้นฐาน (default scripts + เวอร์ชัน)","nmap -sC -sV -oA scan TARGET"],
-  ["nmap","สแกนทุกพอร์ต TCP","nmap -p- --min-rate 1000 -T4 -oA allports TARGET"],
-  ["nmap","สแกน UDP พอร์ตที่พบบ่อย","nmap -sU --top-ports 50 TARGET"],
-  ["nmap","สแกนเว็ปด้วย NSE (headers และ methods)","nmap -p 80,443 --script http-headers,http-methods TARGET"],
-  ["nmap","ตรวจช่องโหว่ที่รู้จักด้วย NSE vuln","nmap --script vuln -p PORT TARGET"],
-  ["ffuf","ค้นหา directory และไฟล์","ffuf -u https://TARGET/FUZZ -w wordlist.txt -mc 200,204,301,302,403"],
-  ["ffuf","ค้นหา virtual host",'ffuf -u https://TARGET -H "Host: FUZZ.TARGET" -w subdomains.txt -fs SIZE'],
-  ["ffuf","ค้นหา parameter",'ffuf -u "https://TARGET/page?FUZZ=1" -w params.txt -fs SIZE'],
-  ["gobuster","ค้นหา directory พร้อมนามสกุลไฟล์","gobuster dir -u https://TARGET -w wordlist.txt -x php,txt,bak"],
-  ["gobuster","ค้นหา subdomain ด้วย DNS","gobuster dns -d TARGET -w subdomains.txt"],
-  ["sqlmap","ทดสอบ parameter ผ่าน URL",'sqlmap -u "https://TARGET/page?id=1" --batch --dbs'],
-  ["sqlmap","ใช้ไฟล์ request ที่บันทึกจาก proxy","sqlmap -r req.txt --batch --level 3 --risk 2"],
-  ["nikto","สแกนเว็ปเซิร์ฟเวอร์เบื้องต้น","nikto -h https://TARGET"],
-  ["curl","ดู response header ทั้งหมด","curl -i https://TARGET"],
-  ["curl","ดูเฉพาะ header","curl -I https://TARGET"],
-  ["curl","ส่งผ่าน proxy (Burp) ข้ามการตรวจใบรับรอง","curl -k -v --proxy http://127.0.0.1:8080 https://TARGET"],
-  ["curl","ส่ง JSON ด้วย POST",'curl -X POST -H "Content-Type: application/json" -d "{}" https://TARGET/api'],
-  ["curl","ดูเฉพาะ status code",'curl -s -o /dev/null -w "%{http_code}" https://TARGET'],
-  ["openssl","ตรวจใบรับรองและ TLS ของเซิร์ฟเวอร์","openssl s_client -connect TARGET:443 -servername TARGET"],
-  ["openssl","อ่านรายละเอียดไฟล์ใบรับรอง","openssl x509 -in cert.pem -text -noout"],
-  ["dig","ดูเรคคอร์ด DNS","dig TARGET ANY +noall +answer"],
-  ["dig","ทดสอบ zone transfer","dig axfr TARGET @NAMESERVER"]
+  ["nmap", "Basic scan (default scripts + version detection)", "nmap -sC -sV -oA scan TARGET"],
+  ["nmap", "Scan all TCP ports", "nmap -p- --min-rate 1000 -T4 -oA allports TARGET"],
+  ["nmap", "Scan common UDP ports", "nmap -sU --top-ports 50 TARGET"],
+  ["nmap", "Web scan with NSE (headers and methods)", "nmap -p 80,443 --script http-headers,http-methods TARGET"],
+  ["nmap", "Check known vulnerabilities with NSE vuln scripts", "nmap --script vuln -p PORT TARGET"],
+  ["ffuf", "Directory and file discovery", "ffuf -u https://TARGET/FUZZ -w wordlist.txt -mc 200,204,301,302,403"],
+  ["ffuf", "Virtual host discovery", 'ffuf -u https://TARGET -H "Host: FUZZ.TARGET" -w subdomains.txt -fs SIZE'],
+  ["ffuf", "Parameter discovery", 'ffuf -u "https://TARGET/page?FUZZ=1" -w params.txt -fs SIZE'],
+  ["gobuster", "Directory discovery with file extensions", "gobuster dir -u https://TARGET -w wordlist.txt -x php,txt,bak"],
+  ["gobuster", "Subdomain discovery via DNS", "gobuster dns -d TARGET -w subdomains.txt"],
+  ["sqlmap", "Test a parameter in a URL", 'sqlmap -u "https://TARGET/page?id=1" --batch --dbs'],
+  ["sqlmap", "Use a request file saved from a proxy", "sqlmap -r req.txt --batch --level 3 --risk 2"],
+  ["nikto", "Basic web server scan", "nikto -h https://TARGET"],
+  ["curl", "Show full response headers", "curl -i https://TARGET"],
+  ["curl", "Show headers only", "curl -I https://TARGET"],
+  ["curl", "Send through a proxy (Burp) and skip certificate check", "curl -k -v --proxy http://127.0.0.1:8080 https://TARGET"],
+  ["curl", "Send JSON with POST", 'curl -X POST -H "Content-Type: application/json" -d "{}" https://TARGET/api'],
+  ["curl", "Show status code only", 'curl -s -o /dev/null -w "%{http_code}" https://TARGET'],
+  ["openssl", "Inspect server certificate and TLS", "openssl s_client -connect TARGET:443 -servername TARGET"],
+  ["openssl", "Read certificate file details", "openssl x509 -in cert.pem -text -noout"],
+  ["dig", "Query DNS records", "dig TARGET ANY +noall +answer"],
+  ["dig", "Test zone transfer", "dig axfr TARGET @NAMESERVER"]
 ];
 function viewCmds() {
   const q = $("#q").value.trim().toLowerCase();
   const rows = CMDS.map((c, i) => [c, i]).filter(([c]) => !q || c.join(" ").toLowerCase().includes(q));
   $("#list").innerHTML = rows.length ? rows.map(([[t, d, c], i]) =>
     `<article class="item"><h3><span>${esc(d)}</span><span class="tag">${esc(t)}</span></h3><pre>${esc(c)}</pre>
-     <div class="meta"><span>แทน TARGET ด้วยเป้าหมายที่ได้รับอนุญาต</span><span class="acts"><button data-op="cpcmd" data-i="${i}">คัดลอก</button></span></div></article>`).join("")
-    : `<div class="empty">ไม่พบคำสั่งที่ตรงกับการค้นหา เพิ่มคำสั่งของคุณเองได้ที่แท็บสนิปเป็ต</div>`;
+     <div class="meta"><span>Replace TARGET with an authorized target</span><span class="acts"><button data-op="cpcmd" data-i="${i}">คัดลอก</button></span></div></article>`).join("")
+    : `<div class="empty">ไม่พบคำสั่งที่ตรงกับการค้นหา เพิ่มคำสั่งของคุณเองได้ที่แท็บ Snippets</div>`;
 }
 
-// ---- reference tables ----
+// ================= reference =================
 const REFS = [
   ["HTTP status", [
-    ["200","OK","สำเร็จ"],["201","Created","สร้างข้อมูลสำเร็จ มักเจอหลัง POST"],["204","No Content","สำเร็จ ไม่มี body"],
-    ["301","Moved Permanently","redirect ถาวร"],["302","Found","redirect ชั่วคราว ตรวจ open redirect"],["304","Not Modified","ใช้แคช"],
-    ["307 / 308","Temporary / Permanent Redirect","redirect โดยคงเมธอดเดิม"],["400","Bad Request","request ผิดรูปแบบ"],
-    ["401","Unauthorized","ยังไม่ได้ยืนยันตัวตน"],["403","Forbidden","ยืนยันแล้วแต่ไม่มีสิทธิ์ ลองเทียบกับ 404"],
-    ["404","Not Found","ไม่พบ resource"],["405","Method Not Allowed","ลองเมธอดอื่น"],["409","Conflict","ข้อมูลขัดแย้งกับสถานะปัจจุบัน"],
-    ["413","Payload Too Large","body ใหญ่เกินกำหนด"],["415","Unsupported Media Type","Content-Type ไม่รองรับ"],
-    ["429","Too Many Requests","มี rate limit"],["500","Internal Server Error","ดู stack trace หรือ error ที่หลุดออกมา"],
-    ["502","Bad Gateway","เซิร์ฟเวอร์ต้นทางตอบผิดปกติ"],["503","Service Unavailable","บริการไม่พร้อม"],["504","Gateway Timeout","เซิร์ฟเวอร์ต้นทางไม่ตอบทันเวลา"]]],
-  ["พอร์ตที่พบบ่อย", [
-    ["21","FTP","ตรวจ anonymous login"],["22","SSH","ตรวจเวอร์ชันและวิธียืนยันตัวตน"],["23","Telnet","ไม่เข้ารหัส"],["25","SMTP","ตรวจ open relay"],
-    ["53","DNS","ตรวจ zone transfer"],["80","HTTP","เว็ป"],["110 / 143","POP3 / IMAP","อีเมล"],["111","RPC","portmapper"],
-    ["135 / 139 / 445","MSRPC / NetBIOS / SMB","Windows file sharing"],["161","SNMP (UDP)","ตรวจ community string"],
-    ["389 / 636","LDAP / LDAPS","directory service"],["443","HTTPS","เว็ปแบบเข้ารหัส"],["1433","MSSQL","ฐานข้อมูล"],
-    ["1521","Oracle DB","ฐานข้อมูล"],["2049","NFS","ตรวจ export ที่เปิดอยู่"],["3306","MySQL","ฐานข้อมูล"],["3389","RDP","remote desktop"],
-    ["5432","PostgreSQL","ฐานข้อมูล"],["5900","VNC","remote desktop"],["6379","Redis","ตรวจว่าไม่มี auth"],
-    ["8080 / 8443","HTTP / HTTPS ทางเลือก","แผงจัดการ หรือแอปที่ซ่อนอยู่"],["9200","Elasticsearch","ตรวจว่าเปิดสาธารณะหรือไม่"],["27017","MongoDB","ตรวจว่าไม่มี auth"]]],
-  ["OWASP Top 10:2021 และตัวอย่าง CWE (ฉบับใหม่กว่าอาจจัดหมวดต่างไป ตรวจที่ owasp.org)", [
-    ["A01","Broken Access Control","CWE-22, 284, 352, 639, 862"],["A02","Cryptographic Failures","CWE-259, 319, 327"],
-    ["A03","Injection","CWE-78, 79, 89"],["A04","Insecure Design","CWE-209, 434, 501"],
-    ["A05","Security Misconfiguration","CWE-16, 611"],["A06","Vulnerable and Outdated Components","CWE-1104"],
-    ["A07","Identification and Authentication Failures","CWE-287, 384, 798"],["A08","Software and Data Integrity Failures","CWE-502, 829"],
-    ["A09","Security Logging and Monitoring Failures","CWE-117, 778"],["A10","Server-Side Request Forgery","CWE-918"]]]
+    ["200", "OK", "Success"], ["201", "Created", "Often seen after POST"], ["204", "No Content", "Success with no body"],
+    ["301", "Moved Permanently", "Permanent redirect"], ["302", "Found", "Temporary redirect, check for open redirect"], ["304", "Not Modified", "Use cached copy"],
+    ["307 / 308", "Temporary / Permanent Redirect", "Redirect that preserves the method"], ["400", "Bad Request", "Malformed request"],
+    ["401", "Unauthorized", "Not authenticated"], ["403", "Forbidden", "Authenticated but not permitted, compare with 404"],
+    ["404", "Not Found", "Resource not found"], ["405", "Method Not Allowed", "Try other methods"], ["409", "Conflict", "Conflicts with current state"],
+    ["413", "Payload Too Large", "Body exceeds the limit"], ["415", "Unsupported Media Type", "Content-Type not supported"],
+    ["429", "Too Many Requests", "Rate limiting in place"], ["500", "Internal Server Error", "Look for stack traces or leaked errors"],
+    ["502", "Bad Gateway", "Upstream returned an invalid response"], ["503", "Service Unavailable", "Service is down or overloaded"], ["504", "Gateway Timeout", "Upstream timed out"]]],
+  ["Common ports", [
+    ["21", "FTP", "Check anonymous login"], ["22", "SSH", "Check version and auth methods"], ["23", "Telnet", "Unencrypted"], ["25", "SMTP", "Check open relay"],
+    ["53", "DNS", "Check zone transfer"], ["80", "HTTP", "Web"], ["110 / 143", "POP3 / IMAP", "Email"], ["111", "RPC", "portmapper"],
+    ["135 / 139 / 445", "MSRPC / NetBIOS / SMB", "Windows file sharing"], ["161", "SNMP (UDP)", "Check community strings"],
+    ["389 / 636", "LDAP / LDAPS", "Directory service"], ["443", "HTTPS", "Encrypted web"], ["1433", "MSSQL", "Database"],
+    ["1521", "Oracle DB", "Database"], ["2049", "NFS", "Check exposed exports"], ["3306", "MySQL", "Database"], ["3389", "RDP", "Remote desktop"],
+    ["5432", "PostgreSQL", "Database"], ["5900", "VNC", "Remote desktop"], ["6379", "Redis", "Check for missing auth"],
+    ["8080 / 8443", "HTTP / HTTPS alternate", "Admin panels or hidden apps"], ["9200", "Elasticsearch", "Check public exposure"], ["27017", "MongoDB", "Check for missing auth"]]],
+  ["OWASP Top 10:2021 with example CWEs (newer editions may categorize differently, verify at owasp.org)", [
+    ["A01", "Broken Access Control", "CWE-22, 284, 352, 639, 862"], ["A02", "Cryptographic Failures", "CWE-259, 319, 327"],
+    ["A03", "Injection", "CWE-78, 79, 89"], ["A04", "Insecure Design", "CWE-209, 434, 501"],
+    ["A05", "Security Misconfiguration", "CWE-16, 611"], ["A06", "Vulnerable and Outdated Components", "CWE-1104"],
+    ["A07", "Identification and Authentication Failures", "CWE-287, 384, 798"], ["A08", "Software and Data Integrity Failures", "CWE-502, 829"],
+    ["A09", "Security Logging and Monitoring Failures", "CWE-117, 778"], ["A10", "Server-Side Request Forgery", "CWE-918"]]]
 ];
 function viewRefs() {
   const q = $("#q").value.trim().toLowerCase();
@@ -559,7 +630,7 @@ function viewRefs() {
   $("#list").innerHTML = out || `<div class="empty">ไม่พบรายการที่ตรงกับการค้นหา</div>`;
 }
 
-// ---- markdown (minimal) ----
+// ================= markdown (minimal) =================
 function md(src) {
   const blocks = [];
   const t = esc(src).replace(/```\w*\n([\s\S]*?)```/g, (m, c) => { blocks.push(`<pre><code>${c}</code></pre>`); return "\u0000" + (blocks.length - 1) + "\u0000"; });
@@ -587,19 +658,19 @@ function md(src) {
 }
 $("#form").addEventListener("input", e => { if (tab === "notes" && e.target.name === "body") $("#prev").innerHTML = md(e.target.value); });
 
-// ---- report ----
+// ================= report =================
 function makeReport() {
   const so = Object.fromEntries(SEV.map((v, i) => [v, i]));
   const list = db.findings.filter(f => !tagFilter || f.client === tagFilter).sort((a, b) => so[a.severity] - so[b.severity]);
-  if (!list.length) { toast("ยังไม่มีข้อพบให้สร้างรายงาน"); return; }
-  let o = `# รายงานผลการทดสอบเจาะระบบ\n\n- งาน / ลูกค้า: ${tagFilter || "ทั้งหมด"}\n- วันที่สร้างรายงาน: ${new Date().toISOString().slice(0, 10)}\n- จำนวนข้อพบ: ${list.length}\n\n`;
-  o += "## สรุป\n\n| ระดับ | จำนวน |\n|---|---|\n" + SEV.map(v => `| ${v} | ${list.filter(f => f.severity === v).length} |`).join("\n") + "\n\n## รายละเอียดข้อพบ\n\n";
+  if (!list.length) { toast("ยังไม่มี Finding ให้สร้างรายงาน"); return; }
+  let o = `# Penetration Test Report\n\n- Client / Project: ${tagFilter || "All"}\n- Report date: ${new Date().toISOString().slice(0, 10)}\n- Total findings: ${list.length}\n\n`;
+  o += "## Summary\n\n| Severity | Count |\n|---|---|\n" + SEV.map(v => `| ${v} | ${list.filter(f => f.severity === v).length} |`).join("\n") + "\n\n## Findings\n\n";
   list.forEach((f, i) => {
     o += `### ${i + 1}. ${f.title} [${f.severity}]\n\n`;
-    if (f.client && !tagFilter) o += `- งาน / ลูกค้า: ${f.client}\n`;
-    if (f.target) o += `- เป้าหมาย: \`${f.target}\`\n`;
+    if (f.client && !tagFilter) o += `- Client / Project: ${f.client}\n`;
+    if (f.target) o += `- Target: \`${f.target}\`\n`;
     if (f.cvss) o += `- CVSS: ${f.cvss}\n`;
-    o += `- สถานะ: ${f.status}\n\n`;
+    o += `- Status: ${f.status}\n\n`;
     if (f.body) o += f.body.trim() + "\n\n";
   });
   $("#rtext").value = o;
@@ -615,16 +686,21 @@ $("#rdl").onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 
-render();
-
-// ---------- เปิด / ปิด ----------
+// ================= open / close =================
 $("#close").onclick = () => dlg.close();
+const mainNav = document.querySelector(".main-nav");
 let openBtn = document.getElementById("desk-open");
+if (openBtn && mainNav && !mainNav.contains(openBtn)) { openBtn.className = "nav-link"; mainNav.appendChild(openBtn); }
 if (!openBtn) {
   openBtn = document.createElement("button");
-  openBtn.type = "button"; openBtn.textContent = "Cyber Desk";
-  openBtn.style.cssText = "position:fixed;right:18px;bottom:18px;z-index:50;padding:10px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:#0b1d5c;color:#eef2ff;cursor:pointer";
-  document.body.appendChild(openBtn);
+  openBtn.type = "button"; openBtn.id = "desk-open"; openBtn.textContent = "Cyber Desk";
+  if (mainNav) { openBtn.className = "nav-link"; mainNav.appendChild(openBtn); }
+  else {
+    openBtn.style.cssText = "position:fixed;right:18px;bottom:18px;z-index:50;padding:10px 18px;border-radius:99px;border:0;background:#3f5df0;color:#fff;font-weight:600;cursor:pointer";
+    document.body.appendChild(openBtn);
+  }
 }
-openBtn.addEventListener("click", () => { render(); dlg.showModal(); });
+openBtn.addEventListener("click", e => { e.stopPropagation(); render(); dlg.showModal(); });
+
+render();
 })();
