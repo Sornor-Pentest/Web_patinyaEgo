@@ -130,6 +130,22 @@
   var pointer = null; // active drag state
   var lastMouse = null;
 
+  function analyticsEvent(ev) {
+    return {
+      id: ev.id,
+      type: ev.type[0],
+      severity: ev.type[1],
+      from: ev.from.city,
+      to: ev.to.city,
+      time: ev.time,
+      timestamp: ev.timestamp,
+    };
+  }
+  window.ThreatMapDemo = window.ThreatMapDemo || {};
+  window.ThreatMapDemo.getRecentEvents = function () {
+    return events.slice().reverse().map(analyticsEvent);
+  };
+
   /* ---------- projection (Miller) + view transform ---------- */
 
   function millerY(latDeg) {
@@ -509,6 +525,7 @@
       from: from,
       to: to,
       ip: fakeIp(),
+      timestamp: now.getTime(),
       time:
         pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds()),
     };
@@ -535,6 +552,9 @@
     if (countEl) countEl.textContent = total.toLocaleString("en-US");
     renderFeed(ev.id);
     if (selected) renderInfo();
+    window.dispatchEvent(
+      new CustomEvent("threatmap:attack", { detail: analyticsEvent(ev) }),
+    );
   }
 
   /* ---------- feed + info panel ---------- */

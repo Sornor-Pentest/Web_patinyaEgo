@@ -17,10 +17,14 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="attack-analytics.css" />
+    <link rel="stylesheet" href="monitor.css" />
     <link rel="stylesheet" href="liquid.css" />
     <script src="assets/world-110m.js" defer></script>
     <script src="threatmap.js" defer></script>
+    <script src="attack-analytics.js" defer></script>
     <script src="app.js" defer></script>
+    <script src="monitor.js" defer></script>
     <script src="liquid.js" defer></script>
     <script src="desk-logic.js" defer></script>
     <script src="desk-data.js" defer></script>
@@ -48,7 +52,6 @@
         <nav class="main-nav" aria-label="เมนูหลัก">
           <button class="nav-link active" data-nav="overview">ภาพรวม</button>
           <button class="nav-link" data-nav="courses">คอร์สทั้งหมด</button>
-          <button class="nav-link" data-nav="favorites">รายการโปรด</button>
           <button class="nav-link" data-nav="notes">โน้ตของฉัน</button>
         </nav>
         <div class="header-actions">
@@ -159,12 +162,134 @@
         </div>
         </section>
 
-        <section class="stats" id="stats" aria-label="ภาพรวมการเรียน"></section>
+        <section class="attack-analytics" id="attack-analytics" aria-label="สถิติการโจมตี">
+          <div class="attack-dashboard">
+            <section class="attack-chart-panel" aria-label="กราฟสถิติการโจมตีจำลอง">
+              <div class="attack-panel-head">
+                <div>
+                  <span class="attack-panel-kicker">ATTACK VOLUME</span>
+                  <strong id="attack-chart-total">0</strong>
+                  <span class="attack-panel-caption" id="attack-chart-caption">เหตุการณ์ใน 7 วันที่ผ่านมา</span>
+                </div>
+                <div class="attack-range" role="group" aria-label="เลือกช่วงเวลาของกราฟ">
+                  <button type="button" data-attack-range="week" class="active" aria-pressed="true">1 อาทิตย์</button>
+                  <button type="button" data-attack-range="month" aria-pressed="false">1 เดือน</button>
+                  <button type="button" data-attack-range="year" aria-pressed="false">1 ปี</button>
+                </div>
+              </div>
+              <div class="attack-chart-wrap">
+                <canvas id="attack-chart" role="img" aria-label="กราฟจำนวนเหตุการณ์โจมตีจำลองตามช่วงเวลา"></canvas>
+              </div>
+              <div class="attack-chart-legend"><span></span> เหตุการณ์จำลองจาก threat map</div>
+            </section>
+
+            <div class="attack-side-panels">
+              <section class="attack-table-panel" aria-labelledby="attack-live-title">
+                <div class="attack-table-head">
+                  <div>
+                    <span class="attack-panel-kicker"><i class="attack-live-dot"></i> LIVE FEED · DEMO</span>
+                    <h3 id="attack-live-title">ประเภทที่ใช้ล่าสุด</h3>
+                  </div>
+                  <span class="attack-table-count" id="attack-live-count">0</span>
+                </div>
+                <div class="attack-table-scroll">
+                  <table class="attack-table">
+                    <thead><tr><th>ประเภท</th><th>ระดับ</th><th>เวลา</th></tr></thead>
+                    <tbody id="attack-live-body"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="attack-table-panel" aria-labelledby="attack-rank-title">
+                <div class="attack-table-head">
+                  <div>
+                    <span class="attack-panel-kicker">TOP ATTACK TYPES</span>
+                    <h3 id="attack-rank-title">ประเภทที่พบมากที่สุด</h3>
+                  </div>
+                  <span class="attack-table-period" id="attack-rank-period">7 วัน</span>
+                </div>
+                <div class="attack-table-scroll">
+                  <table class="attack-table attack-rank-table">
+                    <thead><tr><th>#</th><th>ประเภทการโจมตี</th><th>จำนวน</th></tr></thead>
+                    <tbody id="attack-rank-body"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="monitor-section" id="monitor-section" aria-labelledby="monitor-title">
+          <div class="section-head monitor-heading">
+            <div>
+              <div class="eyebrow section-eyebrow">VULNERABILITY INTELLIGENCE</div>
+              <h2 id="monitor-title">Vulnerabilities Real-Time<span class="title-dot"></span></h2>
+              <p class="section-description">ติดตาม CVE ที่เผยแพร่ใน NVD ช่วง 7 วันที่ผ่านมา พร้อมทำเครื่องหมายรายการที่ CISA ระบุว่าอยู่ใน Known Exploited Vulnerabilities</p>
+            </div>
+            <button class="button button-ghost monitor-refresh" id="monitor-refresh" type="button">
+              <span aria-hidden="true">↻</span> รีเฟรชข้อมูล
+            </button>
+          </div>
+
+          <div class="monitor-dashboard">
+            <div class="monitor-summary" aria-label="สรุปข้อมูลช่องโหว่">
+              <article class="monitor-stat">
+                <span>รายการในช่วงนี้</span>
+                <strong id="monitor-total">—</strong>
+                <small>เผยแพร่ใน 7 วัน</small>
+              </article>
+              <article class="monitor-stat">
+                <span>ระดับ Critical</span>
+                <strong id="monitor-critical">—</strong>
+                <small>คะแนน CVSS สูงสุด</small>
+              </article>
+              <article class="monitor-stat">
+                <span>อยู่ใน CISA KEV</span>
+                <strong id="monitor-kev">—</strong>
+                <small>มีรายงานการโจมตีจริง</small>
+              </article>
+              <article class="monitor-stat">
+                <span>อัปเดตล่าสุด</span>
+                <strong class="monitor-updated" id="monitor-updated">ยังไม่ได้โหลด</strong>
+                <small>รีเฟรชทุก 1 ชั่วโมง</small>
+              </article>
+            </div>
+
+            <div class="monitor-panel">
+              <div class="monitor-toolbar">
+                <label class="monitor-search" for="monitor-search">
+                  <span>ค้นหา CVE หรือคำอธิบาย</span>
+                  <input id="monitor-search" type="search" placeholder="เช่น CVE-2026 หรือ product name" />
+                </label>
+                <label class="monitor-severity" for="monitor-severity">
+                  <span>ระดับความรุนแรง</span>
+                  <select id="monitor-severity">
+                    <option value="all">ทุกระดับ</option>
+                    <option value="CRITICAL">Critical</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                    <option value="NONE">ยังไม่ระบุ</option>
+                  </select>
+                </label>
+              </div>
+              <p class="monitor-status" id="monitor-status" role="status" aria-live="polite">เปิดหน้านี้เพื่อโหลดข้อมูลจาก NVD</p>
+              <div class="monitor-list" id="monitor-list" aria-live="polite"></div>
+              <p class="monitor-source">
+                แหล่งข้อมูล: <a href="https://nvd.nist.gov/" target="_blank" rel="noopener noreferrer">NIST NVD</a>
+                · เครื่องหมาย KEV อ้างอิงข้อมูล CISA
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="stats" id="stats" aria-label="ภาพรวมการเรียน" hidden></section>
 
         <section
           class="library-section"
           id="library"
           aria-labelledby="library-title"
+          hidden
         >
           <div class="section-head">
             <div>
@@ -333,11 +458,9 @@
             <label class="form-label" for="course-category">หมวดหมู่</label
             ><select class="form-input" id="course-category">
               <option value="cybersecurity">Cybersecurity</option>
-              <option value="development">Development</option>
-              <option value="ai">AI & Technology</option>
-              <option value="business">Business</option>
-              <option value="creative">Creative</option>
-              <option value="other">อื่น ๆ</option>
+              <option value="development">Developer</option>
+              <option value="network">Network</option>
+              <option value="ai">AI</option>
             </select>
           </div>
         </div>

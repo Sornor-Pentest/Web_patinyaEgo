@@ -1,0 +1,327 @@
+/* Attack analytics: blue theme matching the home page */
+.attack-analytics {
+  width: 100%;
+  margin: 30px 0 48px;
+  color: #edf4ff;
+}
+.attack-analytics-heading {
+  margin-bottom: 16px;
+}
+.attack-analytics-heading .eyebrow {
+  color: #a9ccff;
+}
+.attack-analytics-heading h2 {
+  color: #f5f8ff;
+}
+.attack-analytics-heading p {
+  margin: 5px 0 0;
+  color: #c3d9ff;
+  font-family: var(--thai);
+  font-size: 11px;
+}
+.attack-demo-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 7px;
+  padding: 2px 7px;
+  border: 1px solid #82aaff77;
+  border-radius: 999px;
+  background: #1e48a855;
+  color: #c7dcff;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+.attack-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.95fr);
+  gap: 16px;
+  height: 540px;
+}
+.attack-chart-panel,
+.attack-table-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid #2a4b9b;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #091b4af5, #06143af7);
+  box-shadow: 0 18px 40px #020a2c40, inset 0 1px 0 #ffffff0b;
+}
+.attack-chart-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px 15px;
+  overflow: hidden;
+}
+.attack-panel-head,
+.attack-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.attack-panel-head > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.attack-panel-kicker {
+  display: block;
+  color: #91b8ff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+.attack-panel-head strong {
+  color: #f5f8ff;
+  font-size: 28px;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.attack-panel-caption {
+  color: #8eafe8;
+  font-size: 10px;
+}
+.attack-range {
+  display: flex;
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid #294789;
+  border-radius: 10px;
+  background: #071943;
+}
+.attack-range button {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: #a9c5f4;
+  font-family: var(--thai);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.attack-range button:hover {
+  color: #fff;
+  background: #183779;
+}
+.attack-range button.active {
+  background: linear-gradient(135deg, #3765e9, #264bc1);
+  color: #fff;
+  box-shadow: 0 4px 12px #224bd955;
+}
+.attack-chart-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 14px;
+}
+#attack-chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.attack-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  margin-top: 8px;
+  color: #8eafe8;
+  font-size: 9px;
+}
+.attack-chart-legend span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #60a5ff;
+  box-shadow: 0 0 10px #60a5ff80;
+}
+.attack-side-panels {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
+.attack-table-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 15px 16px 12px;
+  overflow: hidden;
+}
+.attack-table-head {
+  flex: 0 0 auto;
+  align-items: flex-start;
+  margin-bottom: 9px;
+}
+.attack-table-head h3 {
+  margin: 4px 0 0;
+  color: #f2f6ff;
+  font-family: var(--thai);
+  font-size: 14px;
+  font-weight: 550;
+}
+.attack-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: #5ee4b3;
+  box-shadow: 0 0 8px #5ee4b399;
+}
+.attack-table-count,
+.attack-table-period {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid #3559a5;
+  border-radius: 999px;
+  background: #0d245c;
+  color: #b9d1ff;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.attack-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #3c65bc #081943;
+  scrollbar-width: thin;
+}
+.attack-table-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.attack-table-scroll::-webkit-scrollbar-track {
+  background: #081943;
+}
+.attack-table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #3c65bc;
+}
+.attack-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #d3e2ff;
+  font-size: 10px;
+  text-align: left;
+}
+.attack-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #0a1b49;
+}
+.attack-table th {
+  padding: 11px 10px;
+  color: #89a8e1;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.45px;
+}
+.attack-table td {
+  padding: 17px 10px;
+  border-top: 1px solid #1b3267;
+  vertical-align: middle;
+}
+.attack-live-table-type {
+  max-width: 210px;
+  color: #e4edff;
+  font-weight: 550;
+  line-height: 1.45;
+}
+.attack-live-table-route {
+  display: block;
+  margin-top: 7px;
+  color: #829dd0;
+  font-size: 8px;
+  line-height: 1.4;
+}
+.attack-severity {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #42619f;
+  border-radius: 999px;
+  color: #c4d8ff;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+.attack-severity.high {
+  border-color: #ff7a8a77;
+  background: #a92d4a33;
+  color: #ffadba;
+}
+.attack-severity.med {
+  border-color: #f2c65f77;
+  background: #9b741e33;
+  color: #ffdc83;
+}
+.attack-severity.low {
+  border-color: #63c9ff77;
+  background: #1d599033;
+  color: #9edfff;
+}
+.attack-table-time,
+.attack-rank-count {
+  color: #93afe7;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.attack-rank-table td:first-child {
+  width: 34px;
+  color: #80a7ff;
+  font-weight: 700;
+}
+.attack-rank-table td {
+  padding-top: 19px;
+  padding-bottom: 19px;
+}
+.attack-rank-table th:last-child,
+.attack-rank-table td:last-child {
+  text-align: right;
+}
+.attack-rank-count {
+  color: #f3f7ff;
+  font-weight: 700;
+}
+.attack-table-empty {
+  padding: 18px 8px !important;
+  color: #8eafe8;
+  text-align: center;
+}
+@media (max-width: 900px) {
+  .attack-dashboard {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  }
+}
+@media (max-width: 760px) {
+  .attack-dashboard {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .attack-chart-panel {
+    min-height: 430px;
+  }
+  .attack-side-panels {
+    grid-template-rows: repeat(2, minmax(230px, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .attack-analytics {
+    margin-top: 22px;
+  }
+  .attack-chart-panel {
+    min-height: 400px;
+    padding: 15px 13px 12px;
+  }
+  .attack-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .attack-range {
+    width: 100%;
+  }
+  .attack-range button {
+    flex: 1 1 0;
+    padding: 0 6px;
+  }
+  .attack-side-panels {
+    grid-template-rows: repeat(2, minmax(220px, 1fr));
+  }
+}

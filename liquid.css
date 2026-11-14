@@ -1016,8 +1016,8 @@ body {
 }
 
 /* ==========================================================
-   Palette v2: white / deep navy / black
-   Hero stays navy; the page fades to black underneath.
+   Palette v2: white / deep navy / near-black navy
+   Hero stays navy; the page fades to a near-black navy underneath.
    White is the only accent colour (no more bright cyan).
    ========================================================== */
 :root {
@@ -1032,12 +1032,12 @@ body {
   --glass-line: #ffffff33;
 }
 html {
-  background: #000;
+  background: #050b19;
 }
 body {
   background:
     radial-gradient(ellipse 80% 520px at 50% 0, #1d4fe0 0%, transparent 100%),
-    linear-gradient(180deg, #0a2275 0, #081a5c 480px, #050d2e 1050px, #02050f 1700px, #000 100%);
+    linear-gradient(180deg, #0a2275 0, #081a5c 480px, #050d2e 1050px, #02050f 1700px, #050b19 100%);
   background-attachment: scroll;
 }
 

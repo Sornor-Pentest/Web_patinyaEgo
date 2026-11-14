@@ -1,0 +1,498 @@
+/* Vulnerability monitor layout */
+.monitor-section {
+  width: 100%;
+  margin: 24px 0 52px;
+}
+.monitor-section[hidden] {
+  display: none;
+}
+.monitor-heading {
+  position: relative;
+  overflow: hidden;
+  align-items: center;
+  min-height: 132px;
+  margin-bottom: 16px;
+  padding: 22px 26px;
+  border: 1px solid #6578ff;
+  border-radius: 18px;
+  background: linear-gradient(112deg, #4058ee 0%, #304bd5 58%, #263fb8 100%);
+  box-shadow: 0 18px 38px #203dd933, inset 0 1px 0 #ffffff24;
+}
+.monitor-heading::after {
+  content: "";
+  position: absolute;
+  right: 12%;
+  top: -110px;
+  width: 280px;
+  height: 280px;
+  border: 1px solid #ffffff18;
+  border-radius: 50%;
+  box-shadow: 0 0 0 34px #ffffff0a, 0 0 0 68px #ffffff08;
+  pointer-events: none;
+}
+.monitor-heading > div,
+.monitor-heading > button {
+  position: relative;
+  z-index: 1;
+}
+.monitor-heading .eyebrow {
+  color: #d8e0ff;
+}
+.monitor-heading h2 {
+  color: #ffffff;
+}
+.monitor-heading .title-dot {
+  color: #ffeb62;
+}
+.monitor-heading .section-description {
+  max-width: 760px;
+  color: #e1e8ff;
+}
+.monitor-refresh {
+  flex: 0 0 auto;
+  border-color: #ffffff66;
+  background: #142a8b40;
+  color: #ffffff;
+}
+.monitor-refresh:hover {
+  border-color: #ffffffbb;
+  background: #1735b870;
+  color: #ffffff;
+}
+.monitor-refresh:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.monitor-refresh > span {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 18px;
+  line-height: 0.8;
+}
+.monitor-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 122px minmax(0, 1fr);
+  gap: 16px;
+  height: clamp(540px, 80vh, 780px);
+}
+.monitor-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+.monitor-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 18px 17px;
+  border: 1px solid #263d83;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #10265feF, #0b1945f2);
+  box-shadow: 0 10px 26px #020b2c33, inset 0 1px 0 #ffffff0c;
+}
+.monitor-stat:first-child {
+  border-color: #fff078;
+  background: linear-gradient(135deg, #ffed59, #ffdf3b);
+  box-shadow: 0 12px 28px #f3cf3030, inset 0 1px 0 #fff9bd;
+}
+.monitor-stat:first-child span,
+.monitor-stat:first-child strong,
+.monitor-stat:first-child small {
+  color: #142352;
+}
+.monitor-stat:first-child small {
+  opacity: 0.72;
+}
+.monitor-stat span {
+  color: #a9bdff;
+  font-size: 12px;
+}
+.monitor-stat strong {
+  display: block;
+  margin-top: 5px;
+  color: #f5f7ff;
+  font-size: 30px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.monitor-stat:nth-child(2) strong {
+  color: #ff9cab;
+}
+.monitor-stat:nth-child(3) strong {
+  color: #ffd66e;
+}
+.monitor-stat .monitor-updated {
+  font-size: 20px;
+}
+.monitor-stat small {
+  margin-top: 5px;
+  color: #8298d2;
+  font-size: 9px;
+}
+.monitor-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid #243b7e;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #0b1947f2, #071234f5);
+  box-shadow: 0 18px 38px #020a2933, inset 0 1px 0 #ffffff0a;
+}
+.monitor-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  align-items: end;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+.monitor-toolbar label {
+  display: block;
+  min-width: 0;
+  color: #a8bbf2;
+  font-size: 10px;
+}
+.monitor-toolbar label > span {
+  display: block;
+  margin-bottom: 5px;
+}
+.monitor-toolbar label[for]:focus-within {
+  outline: none;
+}
+.monitor-toolbar input,
+.monitor-toolbar select {
+  width: 100%;
+  height: 37px;
+  padding: 0 10px;
+  border: 1px solid #2a438f;
+  border-radius: 8px;
+  outline: none;
+  background: #0d2058;
+  color: #dceaff;
+  font: inherit;
+  font-size: 11px;
+}
+.monitor-toolbar input:focus,
+.monitor-toolbar select:focus {
+  border-color: #94a6ff;
+  box-shadow: 0 0 0 3px #6681ff33;
+}
+.monitor-status {
+  flex: 0 0 auto;
+  margin: 9px 1px 7px;
+  color: #8ca3e3;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.monitor-list {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 6px 4px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #4059c2 #091743;
+  scrollbar-width: thin;
+}
+.monitor-list::-webkit-scrollbar {
+  width: 7px;
+}
+.monitor-list::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background: #091743;
+}
+.monitor-list::-webkit-scrollbar-thumb {
+  border: 1px solid #091743;
+  border-radius: 8px;
+  background: #4059c2;
+}
+.monitor-list::-webkit-scrollbar-thumb:hover {
+  background: #657bff;
+}
+.monitor-card {
+  padding: 14px 16px;
+  border: 1px solid #243a78;
+  border-radius: 12px;
+  background: linear-gradient(125deg, #102358e8, #0a1944e8);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.monitor-card:hover {
+  border-color: #667cff;
+  background: linear-gradient(125deg, #17316f, #102355);
+}
+.monitor-card-top,
+.monitor-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.monitor-cve-id {
+  color: #c2d3ff;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.15px;
+}
+.monitor-cve-id:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.monitor-badge {
+  padding: 3px 7px;
+  border: 1px solid #5369b0;
+  border-radius: 999px;
+  color: #c5d1ff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+.monitor-badge.severity-critical,
+.monitor-badge.kev {
+  border-color: #ff748b72;
+  background: #a72b4230;
+  color: #ff9cab;
+}
+.monitor-badge.severity-high {
+  border-color: #ffad5b70;
+  background: #a5531f30;
+  color: #ffc184;
+}
+.monitor-badge.severity-medium {
+  border-color: #f3d16e66;
+  background: #8b711d2e;
+  color: #f5dc83;
+}
+.monitor-badge.severity-low {
+  border-color: #63c9aa66;
+  background: #1e79632e;
+  color: #8be1c7;
+}
+.monitor-description {
+  margin: 10px 0 11px;
+  color: #d4ddff;
+  font-size: 10px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.monitor-card-meta {
+  color: #8ca3e3;
+  font-size: 9px;
+}
+.monitor-card-meta span + span::before {
+  content: "·";
+  padding-right: 8px;
+  color: #596eae;
+}
+.monitor-empty {
+  padding: 28px 12px;
+  border: 1px dashed #3c549d;
+  border-radius: 10px;
+  color: #a8bbf2;
+  text-align: center;
+  font-size: 11px;
+}
+.monitor-source {
+  flex: 0 0 auto;
+  margin: 9px 1px 0;
+  color: #849bdc;
+  font-size: 9px;
+  line-height: 1.4;
+}
+.monitor-source a {
+  color: #c0ceff;
+}
+.monitor-source a:hover {
+  color: white;
+}
+@media (max-width: 760px) {
+  .monitor-section {
+    width: 100%;
+    margin-top: 20px;
+  }
+  .monitor-heading {
+    align-items: flex-start;
+  }
+  .monitor-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: auto;
+  }
+  .monitor-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+  }
+  .monitor-stat {
+    min-height: 105px;
+  }
+  .monitor-panel {
+    height: 500px;
+  }
+  .monitor-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .monitor-section {
+    width: 100%;
+  }
+  .monitor-heading {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .monitor-refresh {
+    align-self: flex-start;
+  }
+  .monitor-panel {
+    height: 500px;
+    padding: 11px;
+  }
+  .monitor-stat {
+    min-height: 92px;
+    padding: 12px;
+  }
+  .monitor-stat strong {
+    font-size: 24px;
+  }
+  .monitor-stat .monitor-updated {
+    font-size: 16px;
+  }
+  .monitor-card {
+    padding: 11px;
+  }
+}
+
+/* Match the site's blue hero and threat-map palette */
+.monitor-section {
+  color: #edf4ff;
+}
+.monitor-heading {
+  min-height: 0;
+  padding: 4px 0;
+  overflow: visible;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.monitor-heading::after {
+  display: none;
+}
+.monitor-heading .eyebrow {
+  color: #a9ccff;
+}
+.monitor-heading h2 {
+  color: #f5f8ff;
+}
+.monitor-heading .title-dot {
+  color: #64a5ff;
+}
+.monitor-heading .section-description {
+  color: #c3d9ff;
+}
+.monitor-refresh {
+  border-color: #91baff88;
+  background: #102c754d;
+  color: #f1f6ff;
+}
+.monitor-refresh:hover {
+  border-color: #c0d8ff;
+  background: #1d48a8aa;
+  color: #ffffff;
+}
+.monitor-stat {
+  border-color: #355ab0;
+  background: linear-gradient(145deg, #102968e8, #091b4ceF);
+  box-shadow: 0 10px 28px #06123b38, inset 0 1px 0 #ffffff10;
+}
+.monitor-stat:first-child {
+  border-color: #4d7ce0;
+  background: linear-gradient(145deg, #1946a3, #102967);
+  box-shadow: 0 10px 28px #06123b38, inset 0 1px 0 #ffffff18;
+}
+.monitor-stat:first-child span,
+.monitor-stat:first-child strong {
+  color: #f5f8ff;
+}
+.monitor-stat:first-child small {
+  color: #afcbff;
+  opacity: 1;
+}
+.monitor-stat span {
+  color: #b8d2ff;
+}
+.monitor-stat small {
+  color: #8eafe8;
+}
+.monitor-panel {
+  border-color: #2a4b9b;
+  background: linear-gradient(145deg, #091b4af5, #06143af7);
+  box-shadow: 0 18px 40px #020a2c40, inset 0 1px 0 #ffffff0b;
+}
+.monitor-toolbar label {
+  color: #b8d2ff;
+}
+.monitor-toolbar input,
+.monitor-toolbar select {
+  border-color: #3559a5;
+  background: #0b2057;
+  color: #edf4ff;
+}
+.monitor-toolbar input::placeholder {
+  color: #809dcc;
+}
+.monitor-toolbar input:focus,
+.monitor-toolbar select:focus {
+  border-color: #84b7ff;
+  box-shadow: 0 0 0 3px #4e8fff35;
+}
+.monitor-status,
+.monitor-source {
+  color: #91addf;
+}
+.monitor-list {
+  scrollbar-color: #3c65bc #081943;
+}
+.monitor-list::-webkit-scrollbar-track {
+  background: #081943;
+}
+.monitor-list::-webkit-scrollbar-thumb {
+  border-color: #081943;
+  background: #3c65bc;
+}
+.monitor-list::-webkit-scrollbar-thumb:hover {
+  background: #689aff;
+}
+.monitor-card {
+  border-color: #294789;
+  background: linear-gradient(135deg, #10265fe8, #0a1c49ed);
+}
+.monitor-card:hover {
+  border-color: #5b8dea;
+  background: linear-gradient(135deg, #173575, #10265b);
+}
+.monitor-cve-id {
+  color: #c4dcff;
+}
+.monitor-description {
+  color: #d3e2ff;
+}
+.monitor-card-meta {
+  color: #91addf;
+}
+.monitor-empty {
+  border-color: #3c5fa9;
+  color: #b8d2ff;
+}
+.monitor-source a {
+  color: #c4dcff;
+}

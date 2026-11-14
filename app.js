@@ -55,12 +55,14 @@ const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 const CATEGORY = {
   cybersecurity: { label: "Cybersecurity", icon: "pen", tone: "blue" },
-  development: { label: "Development", icon: "code", tone: "teal" },
-  ai: { label: "AI & Technology", icon: "spark", tone: "silver" },
+  development: { label: "Developer", icon: "code", tone: "teal" },
+  network: { label: "Network", icon: "layers", tone: "green" },
+  ai: { label: "AI", icon: "spark", tone: "silver" },
   business: { label: "Business", icon: "briefcase", tone: "green" },
   creative: { label: "Creative", icon: "layers", tone: "amber" },
   other: { label: "อื่น ๆ", icon: "folder", tone: "rose" },
 };
+const CATEGORY_FILTERS = ["cybersecurity", "development", "network", "ai"];
 const STORAGE_KEY = "coursevault.v1";
 const progress = (course) =>
   course.lessons.length
@@ -323,19 +325,11 @@ function renderStats() {
     icon("arrow-right");
 }
 function renderFilters() {
-  $("#category-row").innerHTML =
-    `<button class="category-chip ${category === "all" ? "active" : ""}" data-category="all" aria-pressed="${category === "all"}">${icon("grid")} ทั้งหมด</button>` +
-    Object.entries(CATEGORY)
-      .filter(
-        ([key]) =>
-          key !== "other" || state.courses.some((c) => c.category === "other"),
-      )
-      .map(
-        ([key, item]) =>
-          `<button class="category-chip ${category === key ? "active" : ""}" data-category="${key}" aria-pressed="${category === key}">${icon(item.icon)} ${item.label}</button>`,
-      )
-      .join("");
-  let base = state.courses.filter((c) => view !== "favorites" || c.favorite);
+  $("#category-row").innerHTML = CATEGORY_FILTERS.map((key) => {
+    const item = CATEGORY[key];
+    return `<button class="category-chip ${category === key ? "active" : ""}" data-category="${key}" aria-pressed="${category === key}">${icon(item.icon)} ${item.label}</button>`;
+  }).join("");
+  let base = state.courses;
   if (category !== "all") base = base.filter((c) => c.category === category);
   if (search)
     base = base.filter((c) =>
@@ -372,12 +366,11 @@ function courseCard(c) {
   const pct = progress(c);
   const status = statusOf(c);
   const done = c.lessons.filter((l) => l.done).length;
-  return `<article class="course-card" data-course-id="${escapeHTML(c.id)}"><div class="course-cover">${artwork(c)}<button class="cover-open" data-open="${escapeHTML(c.id)}" aria-label="เปิดคอร์ส ${escapeHTML(c.title)}"></button><span class="cover-category">${escapeHTML(CATEGORY[c.category].label.toUpperCase())}</span><button class="favorite-button" data-favorite="${escapeHTML(c.id)}" aria-label="${c.favorite ? "นำออกจาก" : "เพิ่มใน"}รายการโปรด: ${escapeHTML(c.title)}" aria-pressed="${c.favorite}">${icon("star")}</button><span class="cover-series">${c.sample ? "THE LEARNING COLLECTION" : "YOUR PERSONAL COLLECTION"}</span><span class="cover-time">${formatHours(c.hours)} HRS</span></div><div class="card-body"><div class="card-provider"><i class="provider-dot"></i>${escapeHTML(c.provider)}</div><h3 class="card-title"><button data-open="${escapeHTML(c.id)}">${escapeHTML(c.title)}</button></h3><div class="card-meta"><span>${icon("book")}${c.lessons.length} บทเรียน</span><span>${icon("clock")}${formatHours(c.hours)} ชั่วโมง</span></div><div class="card-progress-head ${status}"><span>${status === "completed" ? "เรียนจบครบทุกบทแล้ว" : `${done} จาก ${c.lessons.length} บทเรียน`}</span><strong>${pct}%</strong></div><div class="progress-track"><span style="width:${pct}%"></span></div><div class="card-bottom"><span class="card-status ${status}"><i></i>${statusLabel(c)}</span><button class="card-go" data-open="${escapeHTML(c.id)}">${pct === 100 ? "ทบทวนคอร์ส" : pct > 0 ? "เรียนต่อ" : "เริ่มเรียน"}${icon("arrow-right")}</button></div></div></article>`;
+  return `<article class="course-card" data-course-id="${escapeHTML(c.id)}"><div class="course-cover">${artwork(c)}<button class="cover-open" data-open="${escapeHTML(c.id)}" aria-label="เปิดคอร์ส ${escapeHTML(c.title)}"></button><span class="cover-category">${escapeHTML(CATEGORY[c.category].label.toUpperCase())}</span><span class="cover-series">${c.sample ? "THE LEARNING COLLECTION" : "YOUR PERSONAL COLLECTION"}</span><span class="cover-time">${formatHours(c.hours)} HRS</span></div><div class="card-body"><div class="card-provider"><i class="provider-dot"></i>${escapeHTML(c.provider)}</div><h3 class="card-title"><button data-open="${escapeHTML(c.id)}">${escapeHTML(c.title)}</button></h3><div class="card-meta"><span>${icon("book")}${c.lessons.length} บทเรียน</span><span>${icon("clock")}${formatHours(c.hours)} ชั่วโมง</span></div><div class="card-progress-head ${status}"><span>${status === "completed" ? "เรียนจบครบทุกบทแล้ว" : `${done} จาก ${c.lessons.length} บทเรียน`}</span><strong>${pct}%</strong></div><div class="progress-track"><span style="width:${pct}%"></span></div><div class="card-bottom"><span class="card-status ${status}"><i></i>${statusLabel(c)}</span><button class="card-go" data-open="${escapeHTML(c.id)}">${pct === 100 ? "ทบทวนคอร์ส" : pct > 0 ? "เรียนต่อ" : "เริ่มเรียน"}${icon("arrow-right")}</button></div></div></article>`;
 }
 function renderLibrary() {
   let filtered = state.courses.filter(
     (c) =>
-      (view !== "favorites" || c.favorite) &&
       (category === "all" || c.category === category) &&
       (status === "all" || statusOf(c) === status) &&
       (!search ||
@@ -395,9 +388,9 @@ function renderLibrary() {
   $("#course-grid").classList.toggle("list-layout", state.layout === "list");
   $("#course-grid").innerHTML = filtered.length
     ? filtered.map(courseCard).join("")
-    : `<div class="empty-state">${icon(view === "favorites" ? "star" : "search")}<h3>${search ? "ไม่พบคอร์สที่ค้นหา" : view === "favorites" ? "เก็บคอร์สที่ชอบไว้ตรงนี้" : "ยังไม่มีคอร์สในรายการนี้"}</h3><p>${search ? "ลองใช้คำค้นอื่น หรือเปลี่ยนหมวดหมู่" : view === "favorites" ? "กดดาวบนการ์ดคอร์ส เพื่อกลับมาหาได้ง่ายขึ้น" : "เพิ่มคอร์สแรก หรือเลือกตัวกรองอื่นเพื่อดูคอร์สในคลัง"}</p><button class="button button-outline" id="empty-action">${search || status !== "all" || category !== "all" ? "ล้างตัวกรอง" : view === "favorites" ? "ไปยังคลังคอร์ส" : "เพิ่มคอร์สแรก"} ${icon("arrow-right")}</button></div>`;
+    : `<div class="empty-state">${icon("search")}<h3>${search ? "ไม่พบคอร์สที่ค้นหา" : "ยังไม่มีคอร์สในรายการนี้"}</h3><p>${search ? "ลองใช้คำค้นอื่น หรือเปลี่ยนหมวดหมู่" : "เพิ่มคอร์สแรก หรือเลือกตัวกรองอื่นเพื่อดูคอร์สในคลัง"}</p><button class="button button-outline" id="empty-action">${search || status !== "all" || category !== "all" ? "ล้างตัวกรอง" : "เพิ่มคอร์สแรก"} ${icon("arrow-right")}</button></div>`;
   $("#results-count").textContent =
-    `แสดง ${filtered.length} จาก ${state.courses.filter((c) => view !== "favorites" || c.favorite).length} คอร์ส`;
+    `แสดง ${filtered.length} จาก ${state.courses.length} คอร์ส`;
   document.querySelectorAll("[data-layout]").forEach((button) => {
     const active = button.dataset.layout === state.layout;
     button.classList.toggle("active", active);
@@ -434,9 +427,12 @@ function changeView(next, scroll = true) {
     else button.removeAttribute("aria-current");
   });
   $("#hero").hidden = view !== "overview";
-  $("#stats").hidden = view !== "overview";
-  $("#library").hidden = view === "notes";
+  $("#attack-analytics").hidden = view !== "overview";
+  $("#stats").hidden = true;
+  $("#monitor-section").hidden = view !== "overview";
+  $("#library").hidden = view !== "courses";
   $("#notes-section").hidden = view !== "notes";
+  document.dispatchEvent(new CustomEvent("app:viewchange", { detail: { view } }));
   const labels = {
     overview: [
       "คลังคอร์สของฉัน",
@@ -447,11 +443,6 @@ function changeView(next, scroll = true) {
       "คอร์สทั้งหมด",
       "YOUR KNOWLEDGE, ORGANIZED",
       "ทุกคอร์สที่ลงทุนไว้ ค้นหาและกลับมาเรียนได้ง่าย ๆ",
-    ],
-    favorites: [
-      "รายการโปรด",
-      "KEEP THE GOOD ONES CLOSE",
-      "คอร์สที่ชอบ เก็บไว้ใกล้มืออีกนิด",
     ],
   };
   if (labels[view]) {
@@ -512,7 +503,7 @@ function renderDetail() {
   const next = c.lessons.find((l) => !l.done);
   const target = safeURL(next?.url) || safeURL(c.url);
   $("#course-detail").innerHTML =
-    `<div class="detail-topbar"><span class="eyebrow">YOUR LEARNING ROOM</span><div><button class="icon-button" data-favorite="${escapeHTML(c.id)}" aria-label="${c.favorite ? "นำออกจาก" : "เพิ่มใน"}รายการโปรด" aria-pressed="${c.favorite}">${icon("star")}</button><button class="icon-button" data-close="course-dialog" aria-label="ปิดหน้าคอร์ส">${icon("x")}</button></div></div><div class="detail-layout"><div class="detail-main"><div class="detail-cover">${artwork(c, "detail")}<button class="cover-edit-button" id="edit-cover">${icon("edit")} เปลี่ยนรูปปก</button><span class="cover-series">${c.sample ? "THE LEARNING COLLECTION" : "YOUR PERSONAL COLLECTION"}</span></div><span class="detail-category">${escapeHTML(CATEGORY[c.category].label.toUpperCase())}</span><h2 class="detail-title" id="detail-title">${escapeHTML(c.title)}</h2><div class="detail-provider">${escapeHTML(c.provider)} · ${formatHours(c.hours)} ชั่วโมง</div><p class="detail-description">${escapeHTML(c.description || "พื้นที่สำหรับการเรียนรู้ครั้งต่อไปของคุณ")}</p>${c.sample ? '<div class="sample-message">คอร์สตัวอย่างสำหรับลองใช้งาน ยังไม่มีวิดีโอจริง<br>ลองเช็กบทเรียนหรือจดโน้ต แล้วค่อยเพิ่มคอร์สของคุณได้เลย</div>' : ""}${target ? `<a class="button button-primary detail-primary" href="${escapeHTML(target)}" target="_blank" rel="noopener noreferrer">${icon("play")} ${pct === 100 ? "เปิดคอร์สเพื่อทบทวน" : "เปิดลิงก์เข้าเรียน"} ${icon("external")}</a>` : `<button class="button button-outline detail-primary" id="add-course-link">${icon("plus")} เพิ่มลิงก์เข้าเรียน</button>`}<div class="detail-small-actions"><button class="text-button" id="edit-course">${icon("edit")} แก้ไขข้อมูลคอร์ส</button><button class="text-button danger" id="delete-course">${icon("trash")} นำออกจากคลัง</button></div></div><div class="detail-aside"><h3>เส้นทางการเรียนรู้</h3><div class="detail-progress"><span>${done} จาก ${c.lessons.length} บทเรียน</span><strong>${pct}%</strong></div><div class="progress-track"><span style="width:${pct}%"></span></div><ol class="lesson-list">${c.lessons.map(lessonRow).join("")}</ol><button class="text-button add-lesson" id="add-lesson">${icon("plus")} เพิ่มบทเรียน</button><div class="note-heading"><h3>โน้ตส่วนตัว</h3><span class="note-state" id="note-state">${storageFailed ? "ยังไม่บันทึก" : "บันทึกอัตโนมัติ"}</span></div><textarea class="course-note" id="course-note" maxlength="20000" placeholder="สิ่งที่ได้เรียนรู้ ไอเดีย หรือจุดที่อยากกลับมาทบทวน..." aria-label="โน้ตส่วนตัว">${escapeHTML(c.note)}</textarea></div></div>`;
+    `<div class="detail-topbar"><span class="eyebrow">YOUR LEARNING ROOM</span><div><button class="icon-button" data-close="course-dialog" aria-label="ปิดหน้าคอร์ส">${icon("x")}</button></div></div><div class="detail-layout"><div class="detail-main"><div class="detail-cover">${artwork(c, "detail")}<button class="cover-edit-button" id="edit-cover">${icon("edit")} เปลี่ยนรูปปก</button><span class="cover-series">${c.sample ? "THE LEARNING COLLECTION" : "YOUR PERSONAL COLLECTION"}</span></div><span class="detail-category">${escapeHTML(CATEGORY[c.category].label.toUpperCase())}</span><h2 class="detail-title" id="detail-title">${escapeHTML(c.title)}</h2><div class="detail-provider">${escapeHTML(c.provider)} · ${formatHours(c.hours)} ชั่วโมง</div><p class="detail-description">${escapeHTML(c.description || "พื้นที่สำหรับการเรียนรู้ครั้งต่อไปของคุณ")}</p>${c.sample ? '<div class="sample-message">คอร์สตัวอย่างสำหรับลองใช้งาน ยังไม่มีวิดีโอจริง<br>ลองเช็กบทเรียนหรือจดโน้ต แล้วค่อยเพิ่มคอร์สของคุณได้เลย</div>' : ""}${target ? `<a class="button button-primary detail-primary" href="${escapeHTML(target)}" target="_blank" rel="noopener noreferrer">${icon("play")} ${pct === 100 ? "เปิดคอร์สเพื่อทบทวน" : "เปิดลิงก์เข้าเรียน"} ${icon("external")}</a>` : `<button class="button button-outline detail-primary" id="add-course-link">${icon("plus")} เพิ่มลิงก์เข้าเรียน</button>`}<div class="detail-small-actions"><button class="text-button" id="edit-course">${icon("edit")} แก้ไขข้อมูลคอร์ส</button><button class="text-button danger" id="delete-course">${icon("trash")} นำออกจากคลัง</button></div></div><div class="detail-aside"><h3>เส้นทางการเรียนรู้</h3><div class="detail-progress"><span>${done} จาก ${c.lessons.length} บทเรียน</span><strong>${pct}%</strong></div><div class="progress-track"><span style="width:${pct}%"></span></div><ol class="lesson-list">${c.lessons.map(lessonRow).join("")}</ol><button class="text-button add-lesson" id="add-lesson">${icon("plus")} เพิ่มบทเรียน</button><div class="note-heading"><h3>โน้ตส่วนตัว</h3><span class="note-state" id="note-state">${storageFailed ? "ยังไม่บันทึก" : "บันทึกอัตโนมัติ"}</span></div><textarea class="course-note" id="course-note" maxlength="20000" placeholder="สิ่งที่ได้เรียนรู้ ไอเดีย หรือจุดที่อยากกลับมาทบทวน..." aria-label="โน้ตส่วนตัว">${escapeHTML(c.note)}</textarea></div></div>`;
 }
 function updateLesson(lessonId, done) {
   const c = state.courses.find((item) => item.id === activeCourse);
@@ -548,6 +539,15 @@ function openCourseForm(id) {
   $("#edit-id").value = id || "";
   $("#form-error").textContent = "";
   const c = state.courses.find((item) => item.id === id);
+  const categorySelect = $("#course-category");
+  categorySelect.querySelectorAll("[data-legacy-category]").forEach((option) => option.remove());
+  if (c && !categorySelect.querySelector(`option[value="${c.category}"]`)) {
+    const legacyOption = document.createElement("option");
+    legacyOption.value = c.category;
+    legacyOption.textContent = CATEGORY[c.category]?.label || "หมวดหมู่เดิม";
+    legacyOption.dataset.legacyCategory = "true";
+    categorySelect.append(legacyOption);
+  }
   draftCover = safeCover(c?.coverImage);
   $("#cover-error").textContent = "";
   renderCoverPreview();
@@ -673,20 +673,9 @@ document.addEventListener("click", (event) => {
     openLessonForm(button.dataset.editLesson);
     return;
   }
-  if (button.dataset.favorite) {
-    const c = state.courses.find((item) => item.id === button.dataset.favorite);
-    if (c) {
-      saveNote();
-      c.favorite = !c.favorite;
-      persist();
-      render();
-      if (activeCourse === c.id) renderDetail();
-      notify(c.favorite ? "เพิ่มในรายการโปรดแล้ว" : "นำออกจากรายการโปรดแล้ว");
-    }
-    return;
-  }
   if (button.dataset.category) {
-    category = button.dataset.category;
+    category =
+      category === button.dataset.category ? "all" : button.dataset.category;
     renderLibrary();
     return;
   }
@@ -764,8 +753,6 @@ document.addEventListener("click", (event) => {
         category = "all";
         $("#search").value = "";
         renderLibrary();
-      } else if (view === "favorites") {
-        changeView("courses");
       } else {
         openCourseForm();
       }
