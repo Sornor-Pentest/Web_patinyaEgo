@@ -1,12 +1,17 @@
 /*
   Cyber Desk — เครื่องมือส่วนตัวสำหรับงาน Pentest (เพิ่มเข้าเว็ป sornorEgo)
-  ใช้งาน: วางไฟล์นี้ข้าง index.html แล้วเพิ่มใน <head> บรรทัดเดียว
+  ใช้งาน: วางไฟล์ desk-logic.js, desk-data.js และ desk.js ข้าง index.html แล้วเพิ่มใน <head> ตามลำดับนี้
+      <script src="desk-logic.js" defer></script>
+      <script src="desk-data.js" defer></script>
       <script src="desk.js" defer></script>
   ปุ่ม "Cyber Desk" จะถูกเพิ่มเข้าแถวเมนูหลัก (.main-nav) ให้อัตโนมัติ
   ทำงานใน Shadow DOM จึงไม่ชนกับ CSS/JS เดิม ข้อมูลเก็บใน localStorage คีย์ "sornorEgo-desk-v1"
 */
 (() => {
 "use strict";
+
+const DL = window.DeskLogic, DD = window.DeskData;
+if (!DL || !DD) { console.error("Cyber Desk: desk-logic.js and desk-data.js must load before desk.js"); return; }
 
 // ---------- fonts ----------
 if (!document.querySelector("link[data-desk-font]")) {
@@ -146,6 +151,19 @@ main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:99p
 .ref td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
 .ref td:first-child{font-family:"JetBrains Mono",ui-monospace,monospace;white-space:nowrap;width:1%;color:var(--yellow)}
 .ref td:last-child{color:var(--muted)}
+.item pre.scroll-pre{max-height:240px;overflow:auto}
+.note{font-size:12.5px;color:var(--muted)}
+.goal{margin:2px 0 8px;font-size:13.5px;color:var(--muted)}
+.lnk{color:var(--yellow);font-size:12.5px}
+.cur{background:var(--yellow);color:var(--ink);font-weight:700}
+.study{border-color:rgba(255,232,77,.45)}
+.face{margin:12px 0 4px;padding:18px 20px;border-radius:14px;background:var(--code)}
+.face .q{font:700 17px/1.5 Manrope,"IBM Plex Sans Thai",sans-serif;white-space:pre-wrap}
+.face .a{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.grade .ghost{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:14px}
+.grade small{color:var(--muted);font-size:11.5px}
+.study-done{margin:8px 0 0;color:var(--muted);font-size:13.5px}
 
 .md{margin-top:10px;font-size:14px;line-height:1.65;word-break:break-word}
 .md h4,.md h5,.md h6{margin:14px 0 4px;font-size:14.5px}
@@ -208,6 +226,7 @@ const HTML = `
     <section class="hero" id="hero"></section>
     <div class="bar">
       <input type="search" id="q" placeholder="ค้นหา..." aria-label="ค้นหา">
+      <button class="ghost" id="seed" hidden></button>
       <button class="ghost" id="report">Generate report (MD)</button><button class="primary" id="add"></button>
     </div>
     <div class="chips" id="chips"></div>
@@ -235,9 +254,23 @@ const SCHEMA = {
       ["status", "Status", "select", ["Open", "Reported", "Fixed", "Accepted risk"]],
       ["body", "Description / Steps to reproduce / Remediation", "textarea"], TAGS] },
   checklist: { label: "Checklist", view: "check" },
+  roadmap: { label: "Roadmap", view: "road" },
   tools: { label: "Toolbox", view: "tools" },
   cmds: { label: "Commands", view: "cmds", search: true },
+  payloads: { label: "Payloads", add: "เพิ่ม Payload / Wordlist", seed: "เพิ่มชุดเริ่มต้น (probes + wordlists)",
+    empty: "ยังไม่มี Payload เก็บ probe, payload และ Wordlist ที่ใช้บ่อยไว้ที่นี่ หรือกด “เพิ่มชุดเริ่มต้น”",
+    fields: [["title", "Title", "input"], ["category", "Category", "select", DD.PAYLOAD_CATEGORIES],
+      ["body", "Payload / Wordlist (one entry per line)", "textarea"], ["note", "Note (when to use it)", "input"], TAGS] },
   refs: { label: "Reference", view: "refs", search: true },
+  cves: { label: "CVE Tracker", add: "เพิ่ม CVE", empty: "ยังไม่มี CVE ที่ติดตาม บันทึก CVE ที่อยากศึกษาหรือลองใน lab ไว้ที่นี่",
+    fields: [["title", "CVE ID (e.g. CVE-2024-12345)", "input"], ["product", "Product / Component", "input"],
+      ["severity", "Severity", "select", SEV], ["cvss", "CVSS (score and vector)", "input"],
+      ["status", "Status", "select", ["Watching", "Reading", "Lab tested", "Done"]],
+      ["ref", "Reference link (advisory, write-up, PoC repository)", "url"],
+      ["body", "Notes (Markdown): affected versions, root cause, mitigation", "textarea"], TAGS] },
+  cards: { label: "Flashcards", add: "เพิ่ม Flashcard", seed: "เพิ่มชุดเริ่มต้น (ports + concepts)",
+    empty: "ยังไม่มี Flashcard เพิ่มเองหรือกด “เพิ่มชุดเริ่มต้น” แล้วทบทวนด้วย spaced repetition",
+    fields: [["title", "Front (question / term)", "input"], ["body", "Back (answer)", "textarea"], TAGS] },
   notes: { label: "Notes", add: "เพิ่มโน้ต", empty: "ยังไม่มีโน้ต เขียนด้วย Markdown แล้วดูพรีวิวได้ทันที",
     fields: [["title", "Title", "input"], ["body", "Content (Markdown)", "textarea"], TAGS] },
   snippets: { label: "Snippets", add: "เพิ่ม Snippet", empty: "ยังไม่มี Snippet เก็บคำสั่งหรือเนื้อหาที่ใช้บ่อยไว้ที่นี่",
@@ -256,13 +289,18 @@ const IC = {
   notes: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
   snippets: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
   tasks: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
-  links: '<path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.7-1.7"/>'
+  links: '<path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.7-1.7"/>',
+  roadmap: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  payloads: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  cves: '<path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  cards: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><path d="M7 10h6M7 14h4"/>'
 };
 const $ = s => root.querySelector(s);
-let db = { findings: [], checks: {}, notes: [], snippets: [], tasks: [], links: [] };
+let db = DL.normalizeDb({});
 let tab = "findings", tagFilter = "", editing = null;
+let studyId = null, showAns = false;
 
-try { const raw = localStorage.getItem(KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); } catch (e) {}
+try { const raw = localStorage.getItem(KEY); if (raw) db = DL.normalizeDb(JSON.parse(raw)); } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { toast("บันทึกลงเบราว์เซอร์ไม่ได้"); } }
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.id); toast.id = setTimeout(() => t.classList.remove("on"), 1800); }
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -273,9 +311,15 @@ const safeUrl = u => /^https?:\/\//i.test(u) ? u : "https://" + u;
 // ================= chrome =================
 const checkTotal = () => CHECK.reduce((n, g) => n + g[1].length, 0);
 const checkDone = () => Object.values(db.checks).filter(Boolean).length;
+const roadStat = () => DL.roadProgress(DD.ROADMAP, db.road);
+const todayStr = () => DL.ymd(new Date());
+const dueNow = () => DL.dueCards(db.cards, todayStr());
 
 function renderNav() {
-  const cnt = k => k === "checklist" ? `${checkDone()}/${checkTotal()}` : SCHEMA[k].view ? "" : db[k].length;
+  const cnt = k => k === "checklist" ? `${checkDone()}/${checkTotal()}`
+    : k === "roadmap" ? `${roadStat().done}/${roadStat().total}`
+    : k === "cards" ? (db.cards.length ? `${dueNow().length}/${db.cards.length}` : "0")
+    : SCHEMA[k].view ? "" : db[k].length;
   $("#nav").innerHTML = Object.keys(SCHEMA).map(k =>
     `<button role="tab" data-tab="${k}" aria-selected="${k === tab}"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg></span><span class="lbl">${SCHEMA[k].label}</span><span class="n">${cnt(k)}</span></button>`).join("");
 }
@@ -285,6 +329,9 @@ function renderHero() {
   const hi = db.findings.filter(f => f.severity === "Critical" || f.severity === "High").length;
   const pct = Math.round(checkDone() / checkTotal() * 100);
   const todo = db.tasks.filter(t => t.status !== "done").length;
+  const rs = roadStat();
+  const openCves = db.cves.filter(c => c.status !== "Done").length;
+  const labbed = db.cves.filter(c => c.status === "Lab tested").length;
   const H = {
     findings: ["Findings", "บันทึกช่องโหว่ที่เจอ จัดระดับ Severity แล้วสร้างรายงานได้ทันที", "Open findings", open, `${hi} Critical / High`],
     checklist: ["Checklist", "ขั้นตอนทดสอบเว็ปแอปตามแนว OWASP ติ๊กตามที่ทำเสร็จ", "Completed", `${checkDone()}/${checkTotal()}`, null, pct],
@@ -294,7 +341,11 @@ function renderHero() {
     notes: ["Notes", "จดโน้ตด้วย Markdown พร้อมพรีวิวสด", "Notes", db.notes.length, null],
     snippets: ["Snippets", "เก็บคำสั่งหรือเนื้อหาที่ใช้บ่อย กดคัดลอกได้ทันที", "Snippets", db.snippets.length, null],
     tasks: ["Tasks", "รายการงานพร้อมสถานะและกำหนดส่ง", "Open tasks", todo, null],
-    links: ["Links", "เก็บลิงก์เครื่องมือและบทความที่ใช้บ่อย", "Links", db.links.length, null]
+    links: ["Links", "เก็บลิงก์เครื่องมือและบทความที่ใช้บ่อย", "Links", db.links.length, null],
+    roadmap: ["Roadmap", "เส้นทางเรียน penetration testing ตั้งแต่ Foundations ถึง Certifications ติ๊กตามที่เรียนจบ", "Completed", `${rs.done}/${rs.total}`, null, DL.percent(rs.done, rs.total)],
+    payloads: ["Payloads", "เก็บ probe, payload และ Wordlist แยกตามประเภท คัดลอกหรือดาวน์โหลดเป็น .txt ได้ (ใช้กับระบบที่ได้รับอนุญาตเท่านั้น)", "Items", db.payloads.length, `${db.payloads.filter(p => p.category === "Wordlist").length} wordlists`],
+    cves: ["CVE Tracker", "ติดตาม CVE ที่อยากศึกษา พร้อมสถานะ ลิงก์ และโน้ต", "Not done yet", openCves, `${labbed} lab tested`],
+    cards: ["Flashcards", "ทบทวนด้วย spaced repetition (SM-2) ระบบจะนัดการ์ดที่ใกล้ลืมกลับมาให้เอง", "Due today", dueNow().length, `${db.cards.length} cards`]
   }[tab];
   const [title, desc, label, val, sub, pr] = H;
   $("#hero").innerHTML = `<div class="hero-main"><span class="hero-tag">Cyber Desk</span><h1>${title}</h1><p>${desc}</p></div>
@@ -308,7 +359,9 @@ function render() {
   $("#chips").hidden = !!view;
   $("#add").hidden = !!view;
   $("#report").hidden = tab !== "findings";
-  if (view) { ({ check: viewCheck, tools: viewTools, cmds: viewCmds, refs: viewRefs })[view](); return; }
+  $("#seed").hidden = !SCHEMA[tab].seed;
+  $("#seed").textContent = SCHEMA[tab].seed || "";
+  if (view) { ({ check: viewCheck, road: viewRoad, tools: viewTools, cmds: viewCmds, refs: viewRefs })[view](); return; }
   $("#add").textContent = SCHEMA[tab].add;
   const q = $("#q").value.trim().toLowerCase();
   const all = db[tab];
@@ -324,17 +377,20 @@ function render() {
   } else if (tab === "tasks") {
     const order = { doing: 0, todo: 1, done: 2 };
     items = items.slice().sort((a, b) => order[a.status] - order[b.status] || (a.due || "9").localeCompare(b.due || "9"));
+  } else if (tab === "cards") {
+    items = items.slice().sort((a, b) => (a.due || "").localeCompare(b.due || ""));
   } else items = items.slice().reverse();
 
+  const study = tab === "cards" && !q && !tagFilter ? studyPanel() : "";
   if (!items.length) {
     $("#list").innerHTML = `<div class="empty">${all.length ? "ไม่พบรายการที่ตรงกับการค้นหา" : SCHEMA[tab].empty}</div>`;
     return;
   }
-  $("#list").innerHTML = items.map(card).join("");
+  $("#list").innerHTML = study + items.map(card).join("");
 }
 
-function acts(it, copy) {
-  return `<span class="acts">${copy ? `<button data-a="copy" data-id="${it.id}">คัดลอก</button>` : ""}
+function acts(it, copy, extra = "") {
+  return `<span class="acts">${copy ? `<button data-a="copy" data-id="${it.id}">คัดลอก</button>` : ""}${extra}
     <button data-a="edit" data-id="${it.id}">แก้ไข</button><button data-a="del" data-id="${it.id}">ลบ</button></span>`;
 }
 const tagHtml = it => tagsOf(it).map(t => `<span class="tag">${esc(t)}</span>`).join("");
@@ -353,6 +409,28 @@ function card(it) {
   if (tab === "links")
     return `<article class="item"><h3><a href="${esc(safeUrl(it.url))}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a></h3>
       <div class="url mono">${esc(it.url)}</div><div class="meta">${tagHtml(it)}${acts(it, true)}</div></article>`;
+  if (tab === "payloads") {
+    const wl = it.category === "Wordlist", n = DL.lineCount(it.body);
+    return `<article class="item"><h3><span>${esc(it.title)}</span><span class="tag">${esc(it.category)}</span></h3>
+      <pre class="${n > 12 ? "scroll-pre" : ""}">${esc(it.body)}</pre>
+      <div class="meta">${wl ? `<span>${n} entries</span>` : ""}${it.note ? `<span class="note">${esc(it.note)}</span>` : ""}${tagHtml(it)}
+      ${acts(it, true, wl ? `<button data-a="dl" data-id="${it.id}">Download .txt</button>` : "")}</div></article>`;
+  }
+  if (tab === "cves") {
+    const nvd = DL.nvdUrl(it.title);
+    const link = u => `<a class="lnk" href="${esc(safeUrl(u))}" target="_blank" rel="noopener noreferrer">${esc(u)}</a>`;
+    return `<article class="item"><h3><span>${nvd ? `<a href="${esc(nvd)}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a>` : esc(it.title)}</span>
+      <span class="sev s-${esc(it.severity)}">${esc(it.severity)}</span></h3>
+      ${it.product ? `<div class="url">${esc(it.product)}</div>` : ""}${it.cvss ? `<div class="url mono">CVSS ${esc(it.cvss)}</div>` : ""}
+      ${it.ref ? `<div class="url mono">${link(it.ref)}</div>` : ""}${it.body ? `<div class="md">${md(it.body)}</div>` : ""}
+      <div class="meta"><span class="tag">${esc(it.status)}</span>${tagHtml(it)}${acts(it, true)}</div></article>`;
+  }
+  if (tab === "cards") {
+    const isDue = (it.due || "") <= todayStr();
+    return `<article class="item"><h3><span>${esc(it.title)}</span><span class="tag">${isDue ? "Due now" : "Due " + esc(it.due)}</span></h3>
+      <div class="md">${md(it.body)}</div>
+      <div class="meta"><span>Interval ${DL.intervalLabel(Number(it.interval) || 0)}</span><span>Ease ${esc(it.ease ?? 2.5)}</span><span>Reviews ${Number(it.reps) || 0}</span>${tagHtml(it)}${acts(it, false)}</div></article>`;
+  }
   const today = new Date().toISOString().slice(0, 10);
   const late = it.due && it.status !== "done" && it.due < today;
   const label = { todo: "To do", doing: "Doing", done: "Done" }[it.status];
@@ -385,7 +463,7 @@ $("#form").addEventListener("click", e => { if (e.target.id === "cancel") $("#dl
 $("#form").addEventListener("submit", e => {
   const data = Object.fromEntries(new FormData(e.target));
   if (editing) Object.assign(editing, data);
-  else db[tab].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ...(tab === "tasks" ? { status: "todo" } : {}), ...data });
+  else db[tab].push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ...(tab === "tasks" ? { status: "todo" } : {}), ...(tab === "cards" ? DL.newCard(new Date()) : {}), ...data });
   save(); render(); toast("บันทึกแล้ว");
 });
 
@@ -405,11 +483,25 @@ $("#list").addEventListener("click", async e => {
   else if (a === "del") { if (confirm("ลบรายการนี้?")) { db[tab] = db[tab].filter(x => x !== it); save(); render(); toast("ลบแล้ว"); } }
   else if (a === "cycle") { it.status = { todo: "doing", doing: "done", done: "todo" }[it.status]; save(); render(); }
   else if (a === "copy") {
-    try { await navigator.clipboard.writeText(tab === "links" ? it.url : it.body); toast("คัดลอกแล้ว"); }
+    try { await navigator.clipboard.writeText(tab === "links" ? it.url : tab === "cves" ? it.title : String(it.body ?? "")); toast("คัดลอกแล้ว"); }
     catch (err) { toast("คัดลอกไม่สำเร็จ"); }
+  }
+  else if (a === "dl") {
+    const url = URL.createObjectURL(new Blob([String(it.body ?? "").replace(/\r\n/g, "\n") + "\n"], { type: "text/plain" }));
+    const l = document.createElement("a");
+    l.href = url; l.download = DL.safeFileName(it.title) + ".txt"; l.click(); URL.revokeObjectURL(url);
   }
 });
 $("#add").onclick = () => openForm();
+$("#seed").onclick = () => {
+  const src = tab === "payloads" ? DD.PAYLOAD_SEED : tab === "cards" ? DD.CARD_SEED : null;
+  if (!src) return;
+  let c = 0;
+  const makeId = () => Date.now().toString(36) + (c++).toString(36) + Math.random().toString(36).slice(2, 5);
+  const n = DL.mergeSeed(db[tab], src, makeId, tab === "cards" ? () => DL.newCard(new Date()) : null);
+  if (n) save();
+  render(); toast(n ? `เพิ่ม ${n} รายการแล้ว` : "มีชุดเริ่มต้นครบแล้ว");
+};
 $("#q").addEventListener("input", render);
 
 // ---- export / import ----
@@ -425,7 +517,7 @@ $("#file").onchange = async e => {
   try {
     const d = JSON.parse(await f.text());
     if (!confirm("นำเข้าจะแทนที่ข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อ?")) return;
-    db = { findings: d.findings || [], checks: d.checks || {}, notes: d.notes || [], snippets: d.snippets || [], tasks: d.tasks || [], links: d.links || [] };
+    db = DL.normalizeDb(d);
     save(); render(); toast("นำเข้าแล้ว");
   } catch (err) { toast("ไฟล์ไม่ถูกต้อง"); }
   e.target.value = "";
@@ -456,6 +548,42 @@ $("#list").addEventListener("change", e => {
   db.checks[k] = e.target.checked; save(); renderNav(); renderHero();
   $("#list .meta").firstChild.textContent = `Progress ${checkDone()}/${checkTotal()} `;
 });
+
+// ================= roadmap =================
+function viewRoad() {
+  const P = roadStat();
+  const cur = P.phases.findIndex(p => p.done < p.total);
+  $("#list").innerHTML = `<div class="meta" style="margin:0 0 4px"><span>Progress ${P.done}/${P.total}</span>
+    <span class="acts"><button data-op="roadreset">Reset all</button></span></div>` +
+    DD.ROADMAP.map((ph, pi) => `<section class="item"><h3 class="grp"><span>${pi + 1}. ${esc(ph.title)}</span>
+      <span>${pi === cur ? `<span class="tag cur">Current focus</span> ` : ""}<span class="tag">${P.phases[pi].done}/${P.phases[pi].total}</span></span></h3>
+      <p class="goal">${esc(ph.goal)}</p>` +
+      ph.items.map(([id, t]) => `<label class="chk"><input type="checkbox" data-r="${esc(id)}" ${db.road[id] ? "checked" : ""}><span>${esc(t)}</span></label>`).join("") +
+      (ph.links.length ? `<div class="meta">${ph.links.map(([n, u]) => `<a class="lnk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(n)}</a>`).join("")}</div>` : "") +
+      `</section>`).join("");
+}
+$("#list").addEventListener("change", e => {
+  const id = e.target.dataset.r; if (!id) return;
+  if (e.target.checked) db.road[id] = true; else delete db.road[id];
+  save(); render();
+  [...root.querySelectorAll("[data-r]")].find(x => x.dataset.r === id)?.focus();
+});
+
+// ================= flashcards (spaced repetition) =================
+function studyPanel() {
+  if (!db.cards.length) return "";
+  const q = dueNow();
+  if (!q.length) return `<section class="item study"><h3><span>Study</span><span class="tag">All caught up</span></h3>
+    <p class="study-done">ไม่มีการ์ดที่ต้องทบทวนตอนนี้ กลับมาอีกครั้งเมื่อถึงกำหนด หรือเพิ่มการ์ดใหม่</p></section>`;
+  const c = q.find(x => x.id === studyId) || q[0];
+  if (c.id !== studyId) { studyId = c.id; showAns = false; }
+  const now = new Date();
+  const grades = DL.GRADES.map((g, i) =>
+    `<button class="ghost" data-op="cgrade" data-g="${i}">${g}<small>${DL.intervalLabel(DL.sm2(c, i, now).interval)}</small></button>`).join("");
+  return `<section class="item study"><h3><span>Study</span><span class="tag">${q.length} due</span></h3>
+    <div class="face"><div class="q">${esc(c.title)}</div>${showAns ? `<div class="a md">${md(c.body)}</div>` : ""}</div>
+    ${showAns ? `<div class="grade">${grades}</div>` : `<div class="btns"><button class="primary" data-op="cshow">Show answer</button></div>`}</section>`;
+}
 
 // ================= toolbox =================
 const te = new TextEncoder(), td = new TextDecoder();
@@ -528,6 +656,13 @@ $("#list").addEventListener("click", async e => {
     }
     else if (op === "cpcmd") { await navigator.clipboard.writeText(CMDS[+bt.dataset.i][2]); toast("คัดลอกแล้ว"); }
     else if (op === "chkreset") { if (confirm("ล้างเครื่องหมายใน Checklist ทั้งหมด?")) { db.checks = {}; save(); render(); } }
+    else if (op === "roadreset") { if (confirm("ล้างเครื่องหมายใน Roadmap ทั้งหมด?")) { db.road = {}; save(); render(); } }
+    else if (op === "cshow") { showAns = true; render(); }
+    else if (op === "cgrade") {
+      const c = db.cards.find(x => x.id === studyId); if (!c) return;
+      Object.assign(c, DL.sm2(c, Number(bt.dataset.g), new Date()));
+      studyId = null; showAns = false; save(); render();
+    }
   } catch (err) { toast("ทำไม่สำเร็จ: ข้อมูลไม่ถูกรูปแบบหรือเบราว์เซอร์ไม่รองรับ"); }
 });
 
